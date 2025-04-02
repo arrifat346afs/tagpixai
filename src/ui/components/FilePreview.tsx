@@ -8,10 +8,8 @@ function FilePreview() {
 
   useEffect(() => {
     if (selectedFile) {
-      // Convert Windows path to URL format
       const normalizedPath = selectedFile.replace(/\\/g, "/");
       const url = `local-file:///${normalizedPath}`;
-      console.log("Setting image URL:", url);
       setImageSrc(url);
       setError(null);
     } else {
@@ -21,50 +19,26 @@ function FilePreview() {
   }, [selectedFile]);
 
   if (!selectedFile) {
-    return <p className="text-center text-background/50">No file selected for preview.</p>;
-  }
-
-  // Check if the file is an image
-  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(selectedFile);
-
-  if (!isImage) {
     return (
-      <div className="text-white">
-        <h2>File Preview</h2>
-        <p>Preview not available for this file type.</p>
+      <div className="flex items-center justify-center h-full">
+        <p className="text-center text-background/50">No file selected for preview.</p>
       </div>
     );
   }
 
   return (
-    <div className="text-center">
-      <h2 className="text-background/50">File Preview</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <div
-        style={{
-          padding: "10px",
-          minHeight: "200px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
+    <div className="flex flex-col items-center justify-center h-full p-4">
+      <h2 className="text-background/50 mb-4">File Preview</h2>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <div className="flex items-center justify-center w-full h-full">
         {imageSrc && (
           <img
             src={imageSrc}
             alt="Preview"
-            style={{
-              maxWidth: "100%",
-              maxHeight: "500px",
-              height: "auto",
-              borderRadius: "5px",
-              objectFit: "contain",
-            }}
+            className="max-w-full max-h-full object-contain rounded-md"
             onError={(e) => {
               console.error("Error loading image:", e);
-              setError(
-                "Failed to load image. Please check if the file exists and is accessible."
-              );
+              setError("Failed to load image. Please check if the file exists and is accessible.");
             }}
           />
         )}

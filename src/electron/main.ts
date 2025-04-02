@@ -5,9 +5,15 @@ import { existsSync, mkdirSync, rmSync } from 'fs';
 import { isDev } from './util.js';
 import { getPreloadPath } from './pathResolver.js';
 import Sharp from 'sharp';
-import Store from 'electron-store';
+import Store  from 'electron-store';
 
-const store = new Store();
+// Initialize the store with a schema
+const store = new Store({
+    name: 'metadata-store', // specific name for the store
+    defaults: {
+        metadata: {} // default empty metadata object
+    }
+});
 
 const tempMetadataDir = path.join(app.getPath('temp'), 'app-temp-metadata');
 
@@ -33,6 +39,7 @@ app.whenReady().then(() => {
     width: 1200,
     height: 800,
     autoHideMenuBar: true,
+    frame: false,
     webPreferences: {
       preload: getPreloadPath(),
       webSecurity: true,
@@ -190,41 +197,39 @@ ipcMain.handle('resize-image-for-ai', async (_, filePath: string) => {
 });
 
 // Add these handlers for metadata operations
-ipcMain.handle('get-file-metadata', async (_event, filePath: string) => {
+ipcMain.handle('get-file-metadata', async (_, filePath: string) => {
   try {
-    const metadataPath = path.join(
-      tempMetadataDir,
-      `${Buffer.from(filePath).toString('base64')}.json`
-    );
-
-    if (!existsSync(metadataPath)) {
-      return null;
-    }
-
-    const metadataContent = await fs.readFile(metadataPath, 'utf-8');
-    return JSON.parse(metadataContent);
+    // Create a safe key from the file path
+    const key = Buffer.from(filePath).toString('base64');
+    console.log('Getting metadata with key:', key);
+    
+    // Retrieve metadata
+    const metadata = store.get(`metadata.${key}`);
+    console.log('Retrieved metadata:', metadata);
+    
+    return metadata || null; // Return null instead of undefined if not found
   } catch (error) {
-    console.error('Error reading metadata:', error);
-    return null;
+    console.error('Failed to get metadata:', error);
+    throw error;
   }
 });
 
-ipcMain.handle('save-file-metadata', async (_event, filePath: string, metadata: any) => {
+ipcMain.handle('save-file-metadata', async (_, filePath: string, metadata: any) => {
   try {
-    // Ensure temp directory exists
-    if (!existsSync(tempMetadataDir)) {
-      await fs.mkdir(tempMetadataDir, { recursive: true });
-    }
-
-    const metadataPath = path.join(
-      tempMetadataDir,
-      `${Buffer.from(filePath).toString('base64')}.json`
-    );
-
-    await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+    // Create a safe key from the file path
+    const key = Buffer.from(filePath).toString('base64');
+    console.log('Saving metadata with key:', key);
+    
+    // Store metadata
+    store.set(`metadata.${key}`, metadata);
+    
+    // Verify the save
+    const saved = store.get(`metadata.${key}`);
+    console.log('Verified saved metadata:', saved);
+    
     return true;
   } catch (error) {
-    console.error('Error saving metadata:', error);
+    console.error('Failed to save metadata:', error);
     throw error;
   }
 });
@@ -264,3 +269,22 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
+ipcMain.on('minimize-window', () => {
+  const win = BrowserWindow.getFocusedWindow()
+  win?.minimize()
+})
+
+ipcMain.on('maximize-window', () => {
+  const win = BrowserWindow.getFocusedWindow()
+  if (win?.isMaximized()) {
+    win.unmaximize()
+  } else {
+    win?.maximize()
+  }
+})
+
+ipcMain.on('close-window', () => {
+  const win = BrowserWindow.getFocusedWindow()
+  win?.close()
+})

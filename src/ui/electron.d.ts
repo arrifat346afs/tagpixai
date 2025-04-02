@@ -19,6 +19,9 @@ type SettingsValue<T extends SettingsKey> = T extends 'metadata'
     : never;
 
 interface ElectronAPI {
+    close(): void;
+    maximize(): void;
+    minimize(): void;
     resizeImageForAI(filePath: string): unknown;
     saveSettings<T extends SettingsKey>(key: T, settings: SettingsValue<T> | null): Promise<void>;
     getSettings<T extends SettingsKey>(key: T): Promise<SettingsValue<T> | null>;

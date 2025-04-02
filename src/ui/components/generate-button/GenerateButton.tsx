@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { useContext, useState } from 'react'
+import { useContext, useState, useEffect } from 'react'
 import { FileContext } from '../FileContext'
 import { toast } from 'sonner'
 import { batchProcessor } from '@/services/batch-processing/processor'
@@ -9,6 +9,10 @@ const GenerateButton = () => {
   const { selectedFiles } = useContext(FileContext)
   const [isProcessing, setIsProcessing] = useState(false)
 
+  // Add useEffect to reset processor state when component mounts
+  useEffect(() => {
+    batchProcessor.reset()
+  }, [])
 
   const updateStatus = (message: string) => {
     
@@ -17,13 +21,25 @@ const GenerateButton = () => {
   }
 
   const handleProgress = (status: BatchProcessingStatus) => {
+    batchProcessor.updateStatus(status)
     updateStatus(`Processing: ${status.completed}/${status.total} files`)
   }
 
-  const handleFileComplete = (result: ProcessingResult) => {
+  const handleFileComplete = async (result: ProcessingResult) => {
     const fileName = result.filePath.split('\\').pop()
     if (result.success && result.metadata) {
-      updateStatus(`Successfully processed ${fileName}`)
+      // Save the metadata immediately after processing
+      try {
+        await window.electron.saveFileMetadata(result.filePath, {
+          title: result.metadata.title || '',
+          description: result.metadata.description || '',
+          keywords: result.metadata.keywords || []
+        });
+        updateStatus(`Successfully processed ${fileName}`)
+      } catch (error) {
+        console.error('Failed to save metadata:', error);
+        updateStatus(`Failed to save metadata for ${fileName}`)
+      }
     } else {
       updateStatus(`Failed to process ${fileName}: ${result.error}`)
     }
@@ -37,6 +53,13 @@ const GenerateButton = () => {
 
     try {
       setIsProcessing(true)
+      batchProcessor.reset() // Reset before starting new process
+      batchProcessor.updateStatus({
+        inProgress: true,
+        total: selectedFiles.length,
+        completed: 0,
+        failed: 0
+      })
       updateStatus('Starting process...')
       
       updateStatus('Fetching API settings...')
@@ -79,6 +102,13 @@ const GenerateButton = () => {
       toast.error(`Failed to start generation process: ${errorMessage}`)
     } finally {
       setIsProcessing(false)
+      batchProcessor.reset() // Reset after completion or error
+      batchProcessor.updateStatus({
+        inProgress: false,
+        total: 0,
+        completed: 0,
+        failed: 0
+      })
     }
   }
 

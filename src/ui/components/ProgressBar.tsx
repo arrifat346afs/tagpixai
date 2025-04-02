@@ -1,55 +1,73 @@
-import { Progress } from "@/components/ui/progress"
-import { useContext, useState, useEffect } from "react"
-import { FileContext } from "./FileContext"
-import { BatchProcessingStatus } from "@/services/batch-processing/types"
-import { batchProcessor } from "@/services/batch-processing/processor"
+import { useContext, useState, useEffect } from "react";
+import { FileContext } from "./FileContext";
+import { BatchProcessingStatus } from "@/services/batch-processing/types";
+import { batchProcessor } from "@/services/batch-processing/processor";
 
-const ProgressBar = () => {
-  const { selectedFiles } = useContext(FileContext)
-  const [progress, setProgress] = useState(0)
-  const [status, setStatus] = useState<BatchProcessingStatus | null>(null)
+interface ProgressBarProps {
+  visible?: boolean;
+}
+
+const ProgressBar = ({ visible = false }: ProgressBarProps) => {
+  const { selectedFiles } = useContext(FileContext);
+  const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState<BatchProcessingStatus | null>(null);
 
   useEffect(() => {
-    // Reset progress when selected files change
-    setProgress(0)
-    setStatus(null)
-  }, [selectedFiles])
+    batchProcessor.reset();
+    return () => {
+      batchProcessor.reset();
+    };
+  }, []);
 
   useEffect(() => {
     const updateProgress = (status: BatchProcessingStatus) => {
-      setStatus(status)
+      setStatus(status);
       if (status.total > 0) {
-        const progressValue = ((status.completed + status.failed) / status.total) * 100
-        setProgress(progressValue)
+        const progressValue =
+          ((status.completed + status.failed) / status.total) * 100;
+        setProgress(progressValue);
       }
+    };
+
+    const unsubscribe = batchProcessor.subscribe(updateProgress);
+    const currentStatus = batchProcessor.getStatus();
+    if (currentStatus.inProgress) {
+      updateProgress(currentStatus);
     }
 
-    // Subscribe to batch processor status updates
-    const interval = setInterval(() => {
-      const currentStatus = batchProcessor.getStatus()
-      if (currentStatus.inProgress) {
-        updateProgress(currentStatus)
+    return () => {
+      if (typeof unsubscribe === "function") {
+        unsubscribe();
       }
-    }, 100)
+    };
+  }, []);
 
-    return () => clearInterval(interval)
-  }, [])
-
-  if (!status?.inProgress && progress === 0) {
-    return null
-  }
+  if (!visible) return null;
 
   return (
-    <div className="col-span-3 row-start-4 pt-1 h-max flex flex-col gap-2 justify-center items-center">
-      <Progress value={progress} className="w-1/2"/>
-      {status && (
-        <div className="text-xs text-zinc-400">
-          Processing: {status.completed + status.failed} of {status.total} files
-          {status.failed > 0 && ` (${status.failed} failed)`}
+    <div className="col-span-3 row-start-4 h-max pb-2">
+      {/* Progress bar container */}
+      <div className="w-full h-4 rounded-md overflow-hidden relative">
+        {/* Progress bar fill */}
+        <div
+          className="h-4 bg-cyan-500
+ transition-all duration-300 ease-in-out"
+          style={{ width: `${progress}%` }}
+        />
+        {/* Status text */}
+        <div className="absolute inset-0 text-xs text-white flex justify-between items-center px-1 select-none">
+          <span>
+            Processing: {(status?.completed ?? 0) + (status?.failed ?? 0)} of{" "}
+            {status?.total} files
+            {status?.failed &&
+              status.failed > 0 &&
+              ` (${status.failed} failed)`}
+          </span>
+          <span>{Math.round(progress)}%</span>
         </div>
-      )}
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProgressBar
+export default ProgressBar;

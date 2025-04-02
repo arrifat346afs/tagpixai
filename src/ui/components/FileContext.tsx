@@ -1,14 +1,23 @@
-import { createContext, useState } from 'react';
-import { AIAnalysisResult } from '@/api/ai-api';
+import React, { createContext, useState } from 'react';
 
-export const FileContext = createContext<{
+interface FileContextType {
   selectedFiles: string[];
-  setSelectedFiles: React.Dispatch<React.SetStateAction<string[]>>;
-  selectedFile: any | null;
-  setSelectedFile: React.Dispatch<React.SetStateAction<any | null>>;
-  selectedFileMetadata: AIAnalysisResult | null;
-  setSelectedFileMetadata: React.Dispatch<React.SetStateAction<AIAnalysisResult | null>>;
-}>({
+  setSelectedFiles: (files: string[]) => void;
+  selectedFile: string | null;
+  setSelectedFile: (file: string | null) => void;
+  selectedFileMetadata: {
+    title: string;
+    description: string;
+    keywords: string[];
+  } | null;
+  setSelectedFileMetadata: (metadata: {
+    title: string;
+    description: string;
+    keywords: string[];
+  } | null) => void;
+}
+
+export const FileContext = createContext<FileContextType>({
   selectedFiles: [],
   setSelectedFiles: () => {},
   selectedFile: null,
@@ -17,21 +26,27 @@ export const FileContext = createContext<{
   setSelectedFileMetadata: () => {},
 });
 
-export function FileProvider({ children }: React.PropsWithChildren) {
-    const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [selectedFileMetadata, setSelectedFileMetadata] = useState<AIAnalysisResult | null>(null);
-    
-    return (
-        <FileContext.Provider value={{ 
-            selectedFiles, 
-            setSelectedFiles, 
-            selectedFile, 
-            setSelectedFile,
-            selectedFileMetadata,
-            setSelectedFileMetadata 
-        }}>
-            {children}
-        </FileContext.Provider>
-    );
+export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [selectedFileMetadata, setSelectedFileMetadata] = useState<{
+    title: string;
+    description: string;
+    keywords: string[];
+  } | null>(null);
+
+  return (
+    <FileContext.Provider
+      value={{
+        selectedFiles,
+        setSelectedFiles,
+        selectedFile,
+        setSelectedFile,
+        selectedFileMetadata,
+        setSelectedFileMetadata,
+      }}
+    >
+      {children}
+    </FileContext.Provider>
+  );
 }

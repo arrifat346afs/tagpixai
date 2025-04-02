@@ -3,6 +3,7 @@ import { FileContext } from '../FileContext';
 import { cn } from "@/lib/utils";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { batchProcessor } from "@/services/batch-processing/processor";
+import { toast } from 'sonner';
 
 interface ThumbnailData {
     path: string;
@@ -33,37 +34,38 @@ function FileDisplay() {
     const handleFileSelect = async (file: string) => {
         console.log('Selected file:', file);
         
-        // Clear previous file's metadata if exists
-        if (selectedFile) {
-            try {
-                await window.electron.clearFileMetadata(selectedFile);
-            } catch (error) {
-                console.error('Failed to clear previous metadata:', error);
-            }
-        }
-        
-        setSelectedFile(file);
+        setSelectedFile(file); // Set selected file immediately
         
         try {
+            // Load metadata for the selected file
             const metadata = await window.electron.getFileMetadata(file);
-            if (metadata) {
-                setSelectedFileMetadata({
-                    title: metadata.title || '',
-                    description: metadata.description || '',
-                    keywords: metadata.keywords || []
-                });
-            } else {
-                setSelectedFileMetadata(null);
-            }
+            console.log('Loaded metadata:', metadata); // Debug log
+            
+            // Always set metadata, even if null
+            setSelectedFileMetadata(metadata ? {
+                title: metadata.title || '',
+                description: metadata.description || '',
+                keywords: metadata.keywords || []
+            } : {
+                title: '',
+                description: '',
+                keywords: []
+            });
         } catch (error) {
             console.error('Failed to load metadata:', error);
-            setSelectedFileMetadata(null);
+            // Set empty metadata on error
+            setSelectedFileMetadata({
+                title: '',
+                description: '',
+                keywords: []
+            });
+            toast.error('Failed to load metadata');
         }
     };
 
     return (
-        <div className="h-max pb-2 col-span-3 row-start-3 pt-2 flex flex-col justify-center">
-            <ScrollArea className="h-full">
+        
+            <ScrollArea className="col-span-3 row-start-3 p-2 flex flex-col justify-center select-none">
                 <div className="flex flex-row gap-2">
                     {thumbnails.length > 0 ? (
                         thumbnails.map((item, index) => (
@@ -71,13 +73,14 @@ function FileDisplay() {
                                 key={index}
                                 onClick={() => handleFileSelect(item.path)}
                                 className={cn(
-                                    "group relative w-[180px] h-[120px]", // Fixed dimensions
+                                    "group relative w-[180px] h-[120px]",
                                     "rounded-md overflow-hidden",
-                                    "border border-zinc-700/50",
+                                    "border",
+                                    selectedFile === item.path ? "border-blue-500" : "border-zinc-700/50",
                                     "hover:border-blue-500",
                                     "transition-all duration-200",
                                     "cursor-pointer",
-                                    "flex-shrink-0" // Prevent thumbnails from shrinking
+                                    "flex-shrink-0"
                                 )}
                             >
                                 <div className="absolute inset-0 flex items-center justify-center">
@@ -115,7 +118,7 @@ function FileDisplay() {
                 <div className=' h-3 flex justify-center items-center'><ScrollBar orientation="horizontal" /></div>
                 
             </ScrollArea>
-        </div>
+       
     );
 }
 

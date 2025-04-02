@@ -11,20 +11,20 @@ import MatadataSettings from './components/settings/MatadataSettings';
 import { Toaster} from 'sonner'
 function App() {
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
       <NavBar />
       <Toaster />
       <Routes>
         <Route path="/api-settings" element={<ApiSettings />} />
         <Route path="/metadata-settings" element={<MatadataSettings />} />
         <Route path="/" element={
-          <div className="h-full grid grid-cols-[20%_50%_30%] grid-rows-[70%_7%_20%] items-center">
+          <div className="h-full grid grid-cols-[20%_50%_30%] grid-rows-[70%_7%_20%_3%] items-center border-t border-zinc-700/50">
             <Catagory />
             <FilePreview />
             <MetadataInput />
             <ActionButton />
             <FileDisplay />
-            <ProgressBar />
+            <ProgressBar visible={true} /> {/* Set to false to hide it */}
           </div>
         } />
       </Routes>
@@ -33,5 +33,6 @@ function App() {
 }
 
 export default App;
+
 
 

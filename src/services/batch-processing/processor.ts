@@ -3,12 +3,41 @@ import { analyzeImage } from '@/api/ai-api';
 import fs from 'fs/promises';
 
 class BatchProcessor {
+  private subscribers: ((status: BatchProcessingStatus) => void)[] = [];
+
+  subscribe(callback: (status: BatchProcessingStatus) => void) {
+    this.subscribers.push(callback);
+    return () => {
+      const index = this.subscribers.indexOf(callback);
+      if (index > -1) {
+        this.subscribers.splice(index, 1);
+      }
+    };
+  }
+
+  updateStatus(status: BatchProcessingStatus) {
+    this.status = status;
+    this.subscribers.forEach(callback => callback(status));
+  }
+
   private status: BatchProcessingStatus = {
     total: 0,
     completed: 0,
     failed: 0,
     inProgress: false
   };
+
+  // Add a reset method
+  reset() {
+    this.status = {
+      total: 0,
+      completed: 0,
+      failed: 0,
+      inProgress: false
+    };
+    // Notify subscribers of the reset
+    this.subscribers.forEach(callback => callback(this.status));
+  }
 
   private async convertToBase64(filePath: string): Promise<string> {
     try {
@@ -83,8 +112,9 @@ class BatchProcessor {
     console.log('Starting batch process with files:', files)
     console.log('Using settings:', settings)
 
+    // Force reset if somehow left in progress state
     if (this.status.inProgress) {
-      throw new Error('Batch processing already in progress')
+      this.reset();
     }
 
     this.status = {
@@ -92,48 +122,55 @@ class BatchProcessor {
       completed: 0,
       failed: 0,
       inProgress: true
+    };
+
+    onProgress?.(this.status);
+    const results: ProcessingResult[] = [];
+
+    try {
+      for (const file of files) {
+        console.log(`Processing file ${files.indexOf(file) + 1}/${files.length}: ${file}`)
+        const result = await this.processFile(file, settings)
+        
+        if (result.success) {
+          this.status.completed++
+          console.log(`Successfully processed file: ${file}`)
+        } else {
+          this.status.failed++
+          console.log(`Failed to process file: ${file}`, result.error)
+        }
+
+        results.push(result)
+        onFileComplete?.(result)
+        onProgress?.(this.status)
+
+        if (settings.api.requestInterval > 0 && files.indexOf(file) < files.length - 1) {
+          console.log(`Waiting ${settings.api.requestInterval} seconds before next file...`)
+          await new Promise(resolve => 
+            setTimeout(resolve, settings.api.requestInterval * 1000)
+          )
+        }
+      }
+    } catch (error) {
+      console.error('Batch processing error:', error);
+      this.reset(); // Reset on error
+      throw error;
+    } finally {
+      this.status.inProgress = false;
+      onProgress?.(this.status);
     }
 
-    onProgress?.(this.status)
-    const results: ProcessingResult[] = []
-
-    for (const file of files) {
-      console.log(`Processing file ${files.indexOf(file) + 1}/${files.length}: ${file}`)
-      const result = await this.processFile(file, settings)
-      
-      if (result.success) {
-        this.status.completed++
-        console.log(`Successfully processed file: ${file}`)
-      } else {
-        this.status.failed++
-        console.log(`Failed to process file: ${file}`, result.error)
-      }
-
-      results.push(result)
-      onFileComplete?.(result)
-      onProgress?.(this.status)
-
-      if (settings.api.requestInterval > 0 && files.indexOf(file) < files.length - 1) {
-        console.log(`Waiting ${settings.api.requestInterval} seconds before next file...`)
-        await new Promise(resolve => 
-          setTimeout(resolve, settings.api.requestInterval * 1000)
-        )
-      }
-    }
-
-    this.status.inProgress = false
-    onProgress?.(this.status)
-    console.log('Batch processing completed')
-
-    return results
+    return results;
   }
 
   getStatus(): BatchProcessingStatus {
-    return { ...this.status };
+    return this.status;
   }
 }
 
 export const batchProcessor = new BatchProcessor();
+
+
 
 
 

@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import "./navbar.css"
 
 const NavBar = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex justify-between items-center h-9">
+    <div className="nav-bar flex justify-between items-center h-9">
       <div className="flex">
         <button 
           className="flex justify-center flex-row items-center w-10 h-9 cursor-pointer" 
@@ -36,7 +37,11 @@ const NavBar = () => {
       </div>
       <div className="flex items-center">
        
-          <button className="flex justify-center items-center w-10 h-9   hover:bg-background/10" id="minimize">
+          <button 
+            className="flex justify-center items-center w-10 h-9 hover:bg-background/10" 
+            id="minimize"
+            onClick={() => window.electron.minimize()}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               height="24px"
@@ -47,7 +52,11 @@ const NavBar = () => {
               <path d="M200-440v-80h560v80H200Z" />
             </svg>
           </button>
-          <button className="flex justify-center items-center w-10 h-9  hover:bg-background/10" id="maximize">
+          <button 
+            className="flex justify-center items-center w-10 h-9 hover:bg-background/10" 
+            id="maximize"
+            onClick={() => window.electron.maximize()}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               height="24px"
@@ -58,7 +67,11 @@ const NavBar = () => {
               <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0 0v-560 560Z" />
             </svg>
           </button>
-          <button className="flex justify-center items-center w-10 h-9 hover:bg-red-600" id="close">
+          <button 
+            className="flex justify-center items-center w-10 h-9 hover:bg-red-600" 
+            id="close"
+            onClick={() => window.electron.close()}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               height="24px"

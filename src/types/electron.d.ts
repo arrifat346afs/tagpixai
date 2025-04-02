@@ -1,6 +1,10 @@
 declare global {
     interface Window {
-        electron: ElectronAPI;
+        electron: {
+            minimize: () => void
+            maximize: () => void
+            close: () => void
+        }
     }
 }
 
@@ -13,5 +17,6 @@ interface ElectronAPI {
 }
 
 export {};
+
 
 

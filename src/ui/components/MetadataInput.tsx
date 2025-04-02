@@ -14,7 +14,7 @@ interface MetadataInputProps {
 }
 
 const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
-  const { selectedFile, selectedFileMetadata } = useContext(FileContext);
+  const { selectedFile, selectedFileMetadata, setSelectedFileMetadata } = useContext(FileContext);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [keywords, setKeywords] = useState<string[]>([]);
@@ -23,17 +23,107 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
 
   // Update local state when context metadata changes
   useEffect(() => {
+    console.log('Metadata update effect triggered');
+    console.log('Current selectedFileMetadata:', selectedFileMetadata);
+    
     if (selectedFileMetadata) {
-      setTitle(selectedFileMetadata.title);
-      setDescription(selectedFileMetadata.description);
-      setKeywords(selectedFileMetadata.keywords);
+        console.log('Setting metadata values:', {
+            title: selectedFileMetadata.title,
+            description: selectedFileMetadata.description,
+            keywords: selectedFileMetadata.keywords
+        });
+        
+        setTitle(selectedFileMetadata.title || '');
+        setDescription(selectedFileMetadata.description || '');
+        setKeywords(selectedFileMetadata.keywords || []);
     } else {
-      // Clear the fields if no metadata
-      setTitle("");
-      setDescription("");
-      setKeywords([]);
+        console.log('Clearing metadata values');
+        setTitle('');
+        setDescription('');
+        setKeywords([]);
     }
   }, [selectedFileMetadata]);
+
+  // Add a separate effect for loading metadata when file changes
+  useEffect(() => {
+    const loadMetadata = async () => {
+      if (selectedFile) {
+        try {
+          console.log('Loading metadata for:', selectedFile);
+          const metadata = await window.electron.getFileMetadata(selectedFile);
+          console.log('Loaded metadata:', metadata);
+          
+          if (metadata) {
+            const normalizedMetadata = {
+              title: metadata.title || '',
+              description: metadata.description || '',
+              keywords: metadata.keywords || []
+            };
+            setSelectedFileMetadata(normalizedMetadata);
+            
+            // Also update local state
+            setTitle(normalizedMetadata.title);
+            setDescription(normalizedMetadata.description);
+            setKeywords(normalizedMetadata.keywords);
+          } else {
+            // Clear metadata if none exists
+            const emptyMetadata = {
+              title: '',
+              description: '',
+              keywords: []
+            };
+            setSelectedFileMetadata(emptyMetadata);
+            setTitle('');
+            setDescription('');
+            setKeywords([]);
+          }
+        } catch (error) {
+          console.error('Error loading metadata:', error);
+          toast.error('Failed to load metadata');
+        }
+      }
+    };
+
+    loadMetadata();
+  }, [selectedFile]);
+
+  const updateMetadata = async (newMetadata: AIAnalysisResult) => {
+    if (selectedFile) {
+      try {
+        console.log('Saving metadata:', newMetadata, 'for file:', selectedFile);
+        await window.electron.saveFileMetadata(selectedFile, newMetadata);
+        setSelectedFileMetadata(newMetadata);
+        onMetadataChange?.(newMetadata);
+        
+        // Verify the save by immediately reading back
+        const savedMetadata = await window.electron.getFileMetadata(selectedFile);
+        console.log('Verified saved metadata:', savedMetadata);
+      } catch (error) {
+        console.error('Failed to save metadata:', error);
+        toast.error('Failed to save metadata');
+      }
+    }
+  };
+
+  const handleTitleChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    await updateMetadata({
+      title: newTitle,
+      description,
+      keywords
+    });
+  };
+
+  const handleDescriptionChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newDescription = e.target.value;
+    setDescription(newDescription);
+    await updateMetadata({
+      title,
+      description: newDescription,
+      keywords
+    });
+  };
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && currentKeyword.trim()) {
@@ -41,56 +131,24 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
       if (!keywords.includes(currentKeyword.trim())) {
         const newKeywords = [...keywords, currentKeyword.trim()];
         setKeywords(newKeywords);
-        const newMetadata = {
+        await updateMetadata({
           title,
           description,
           keywords: newKeywords
-        };
-        onMetadataChange?.(newMetadata);
-        if (selectedFile) {
-          await window.electron.saveFileMetadata(selectedFile, newMetadata);
-        }
+        });
       }
       setCurrentKeyword("");
     }
   };
 
-  const removeKeyword = (keywordToRemove: string) => {
+  const removeKeyword = async (keywordToRemove: string) => {
     const newKeywords = keywords.filter((keyword) => keyword !== keywordToRemove);
     setKeywords(newKeywords);
-    onMetadataChange?.({
+    await updateMetadata({
       title,
       description,
       keywords: newKeywords
     });
-  };
-
-  const handleTitleChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newTitle = e.target.value;
-    setTitle(newTitle);
-    const newMetadata = {
-      title: newTitle,
-      description,
-      keywords
-    };
-    onMetadataChange?.(newMetadata);
-    if (selectedFile) {
-      await window.electron.saveFileMetadata(selectedFile, newMetadata);
-    }
-  };
-
-  const handleDescriptionChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newDescription = e.target.value;
-    setDescription(newDescription);
-    const newMetadata = {
-      title,
-      description: newDescription,
-      keywords
-    };
-    onMetadataChange?.(newMetadata);
-    if (selectedFile) {
-      await window.electron.saveFileMetadata(selectedFile, newMetadata);
-    }
   };
 
   const handleGenerate = async () => {
@@ -126,38 +184,40 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
         [selectedFile],
         settings,
         (status) => console.log('Progress:', status),
-        (result) => {
+        async (result) => {
           if (result.success && result.metadata) {
-            const metadata = result.metadata;
-            // Directly update the UI state
-            setTitle(metadata.title || '');
-            setDescription(metadata.description || '');
-            setKeywords(metadata.keywords || []);
-            // Also notify parent component
-            onMetadataChange?.({
-              title: metadata.title || '',
-              description: metadata.description || '',
-              keywords: metadata.keywords || []
-            });
+            const metadata = {
+              title: result.metadata.title || '',
+              description: result.metadata.description || '',
+              keywords: result.metadata.keywords || []
+            };
+            
+            // Save the metadata and update state
+            await window.electron.saveFileMetadata(selectedFile, metadata);
+            setSelectedFileMetadata(metadata);
+            
+            // Update UI state
+            setTitle(metadata.title);
+            setDescription(metadata.description);
+            setKeywords(metadata.keywords);
+            
+            // Notify parent if needed
+            onMetadataChange?.(metadata);
           }
         }
       );
 
-      if (result[0].success) {
-        // Update UI with the final result data
-        const finalMetadata = result[0].metadata;
-        if (finalMetadata) {
-          const validMetadata = {
-            title: finalMetadata.title || '',
-            description: finalMetadata.description || '',
-            keywords: finalMetadata.keywords || []
-          };
-          setTitle(validMetadata.title);
-          setDescription(validMetadata.description);
-          setKeywords(validMetadata.keywords);
-          onMetadataChange?.(validMetadata);
-        }
-        toast.success('Metadata generated successfully');
+      if (result[0].success && result[0].metadata) {
+        const validMetadata = {
+          title: result[0].metadata.title || '',
+          description: result[0].metadata.description || '',
+          keywords: result[0].metadata.keywords || []
+        };
+        
+        // Save metadata directly here as well to ensure it's saved
+        await window.electron.saveFileMetadata(selectedFile, validMetadata);
+        setSelectedFileMetadata(validMetadata);
+        toast.success('Metadata generated and saved successfully');
       } else {
         toast.error(`Failed to generate metadata: ${result[0].error}`);
       }
@@ -171,8 +231,15 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
 
   return (
     <div className="flex flex-col gap-4 w-full p-4 border-l border-zinc-700/50 overflow-auto transition-all duration-300 h-full">
+      {/* Debug info - remove after fixing */}
+      {/* <div className="text-xs text-zinc-500">
+        Selected File: {selectedFile || 'none'}
+        <br />
+        Has Metadata: {selectedFileMetadata ? 'yes' : 'no'}
+      </div> */}
+      
       <div className="flex flex-col gap-2">
-        <span className="text-sm text-zinc-400">Title</span>
+        <span className="text-sm text-zinc-400 select-none">Title</span>
         <Textarea 
           value={title}
           onChange={handleTitleChange}
@@ -181,7 +248,7 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <span className="text-sm text-zinc-400">Description</span>
+        <span className="text-sm text-zinc-400 select-none">Description</span>
         <Textarea 
           value={description}
           onChange={handleDescriptionChange}
@@ -191,8 +258,8 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
 
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-center">
-          <span className="text-sm text-zinc-400">Keywords</span>
-          <span className="text-sm text-zinc-400">
+          <span className="text-sm text-zinc-400 select-none">Keywords</span>
+          <span className="text-sm text-zinc-400 select-none">
             {keywords.length} keywords
           </span>
         </div>
@@ -255,6 +322,12 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
 };
 
 export default MetadataInput;
+
+
+
+
+
+
 
 
 
