@@ -1,54 +1,100 @@
-# React + TypeScript + Vite
+# TagPix AI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+TagPix AI is an Electron-based desktop application built with React, TypeScript, and Vite that helps generate and manage metadata for images using AI.
 
-Currently, two official plugins are available:
+## Prerequisites
+- electron (v35.0.0 or higher)
+- Node.js (v14.0.0 or higher)
+- npm (v6.0.0 or higher)
+- Git
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Installation
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+1. Clone the repository:
+```bash
+git clone https://github.com/arrifat346afs/react-electron-tagpix-ai.git
+cd react-electron-tagpix-ai
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+2. Install dependencies:
+```bash
+npm install
 ```
+
+## Development
+
+Run the development server:
+```bash
+npm run dev
+```
+
+This will start both:
+- Vite dev server for React (port 5000)
+- Electron app in development mode
+
+## Building
+
+### For Windows:
+```bash
+npm run dist:win
+```
+
+### For macOS:
+```bash
+npm run dist:mac
+```
+
+### For Linux:
+```bash
+npm run dist:linux
+```
+
+The built applications will be available in the `dist` directory.
+
+## Project Structure
+
+```
+├── src/
+│   ├── electron/     # Electron main process code
+│   ├── ui/           # React application code
+│   └── types/        # TypeScript type definitions
+├── dist-electron/    # Compiled Electron code
+├── dist-react/       # Compiled React code
+└── public/           # Static assets
+```
+
+## Tech Stack
+
+- React 19
+- TypeScript
+- Electron 35
+- Vite 6
+- Tailwind CSS
+- Radix UI Components
+- Mistral AI Integration
+- Electron Store for persistence
+- Sharp for image processing
+
+## Features
+
+- Image metadata generation using AI
+- Local file system integration
+- Custom thumbnail generation
+- Metadata persistence
+- Cross-platform support (Windows, macOS, Linux)
+
+## Development Notes
+
+- The app uses Electron's IPC for communication between main and renderer processes
+- All file system operations are handled in the main process
+- The UI is built using React with Tailwind CSS for styling
+- Settings and metadata are persisted using electron-store
+
+## License
+
+[Your License Here]
+
+## Contributing
+
+[Your Contributing Guidelines Here]
+
