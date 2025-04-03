@@ -1,5 +1,5 @@
-import { useContext, useState, useEffect } from "react";
-import { FileContext } from "./FileContext";
+import { useState, useEffect } from "react";
+
 import { BatchProcessingStatus } from "@/services/batch-processing/types";
 import { batchProcessor } from "@/services/batch-processing/processor";
 
@@ -8,7 +8,7 @@ interface ProgressBarProps {
 }
 
 const ProgressBar = ({ visible = false }: ProgressBarProps) => {
-  const { selectedFiles } = useContext(FileContext);
+
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<BatchProcessingStatus | null>(null);
 

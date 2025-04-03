@@ -9,13 +9,14 @@ import Store  from 'electron-store';
 
 // Initialize the store with a schema
 const store = new Store({
-    name: 'metadata-store', // specific name for the store
+    name: 'metadata-store',
     defaults: {
-        metadata: {} // default empty metadata object
+        metadata: {}
     }
 });
 
 const tempMetadataDir = path.join(app.getPath('temp'), 'app-temp-metadata');
+const thumbnailsDir = path.join(app.getPath('userData'), 'thumbnails');
 
 app.whenReady().then(() => {
   // Create temp metadata directory
@@ -43,16 +44,15 @@ app.whenReady().then(() => {
     webPreferences: {
       preload: getPreloadPath(),
       webSecurity: true,
-      contextIsolation: true,
-      nodeIntegration: false
     }
   });
 
   if (isDev()) {
     mainWindow.loadURL('http://localhost:5000');
-    // mainWindow.webContents.openDevTools();
   } else {
+    // Ensure proper path resolution in production
     mainWindow.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'));
+    mainWindow.webContents.openDevTools();
   }
 });
 
@@ -234,32 +234,28 @@ ipcMain.handle('save-file-metadata', async (_, filePath: string, metadata: any) 
   }
 });
 
-// Add a handler to clear specific metadata
-ipcMain.handle('clear-file-metadata', async (_event, filePath: string) => {
-  try {
-    const metadataPath = path.join(
-      tempMetadataDir,
-      `${Buffer.from(filePath).toString('base64')}.json`
-    );
-    
-    if (existsSync(metadataPath)) {
-      await fs.unlink(metadataPath);
-    }
-    return true;
-  } catch (error) {
-    console.error('Error clearing metadata:', error);
-    throw error;
-  }
-});
+// Remove any existing clear-metadata handlers
+// Keep only the necessary handlers for saving and retrieving metadata
 
 // Clean up temp files when app closes
 app.on('will-quit', () => {
   try {
+    // Clean up temp metadata directory
     if (existsSync(tempMetadataDir)) {
       rmSync(tempMetadataDir, { recursive: true, force: true });
     }
+    
+    // Clean up thumbnails directory
+    if (existsSync(thumbnailsDir)) {
+      rmSync(thumbnailsDir, { recursive: true, force: true });
+    }
+    
+    // Clear only the AI-generated metadata from the store
+    store.set('metadata', {});
+    
+    console.log('Successfully cleared AI-generated content on quit');
   } catch (error) {
-    console.error('Error cleaning up temp metadata:', error);
+    console.error('Error cleaning up AI-generated content:', error);
   }
 });
 

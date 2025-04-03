@@ -15,9 +15,9 @@ function App() {
       <NavBar />
       <Toaster />
       <Routes>
-        <Route path="/api-settings" element={<ApiSettings />} />
-        <Route path="/metadata-settings" element={<MatadataSettings />} />
-        <Route path="/" element={
+        <Route path="api-settings" element={<ApiSettings />} />
+        <Route path="metadata-settings" element={<MatadataSettings />} />
+        <Route path="" element={
           <div className="h-full grid grid-cols-[20%_50%_30%] grid-rows-[70%_7%_20%_3%] items-center border-t border-zinc-700/50">
             <Catagory />
             <FilePreview />
@@ -33,6 +33,7 @@ function App() {
 }
 
 export default App;
+
 
 
 

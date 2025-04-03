@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
@@ -14,9 +13,19 @@ export default defineConfig({
   base: './',
   build: {
     outDir: 'dist-react',
-    },
-    server: {
-      port: 5000,
-      strictPort: true,
-    },
+    assetsDir: 'assets',
+    emptyOutDir: true,
+    sourcemap: process.env.NODE_ENV === 'development',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
+  },
+  server: {
+    port: 5000,
+    strictPort: true,
+  },
 })
+
+

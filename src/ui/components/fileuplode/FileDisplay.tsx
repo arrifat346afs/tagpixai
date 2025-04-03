@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from 'react';
 import { FileContext } from '../FileContext';
 import { cn } from "@/lib/utils";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { batchProcessor } from "@/services/batch-processing/processor";
 import { toast } from 'sonner';
 
 interface ThumbnailData {

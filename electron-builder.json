@@ -1,20 +1,30 @@
 {
     "appId": "com.tagpix-ai.electron",
-    "productName": "ElcronApp",
-    "files": ["dist-electron", "dist-react"],
-    "extraResources": ["dist-electron/preload.cjs", "src/assets/**"],
-    "icon": "./TagpixAi.ico",
-    "mac": {
-      "target": "dmg"
+    "productName": "TagPix AI",
+    "files": [
+      "dist-electron/**/*",
+      "dist-react/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "resources"
     },
-    "linux": {
-      "target": "AppImage",
-      "category": "Utility"
-    },
+    "extraResources": [
+      {
+        "from": "dist-electron/preload.cjs",
+        "to": "preload.cjs"
+      },
+      {
+        "from": "src/assets",
+        "to": "assets"
+      }
+    ],
     "win": {
       "target": [
         {
-          "target": "portable"
+          "target": "portable",
+          "arch": ["x64"]
         }
       ],
       "icon": "./TagpixAi.ico"

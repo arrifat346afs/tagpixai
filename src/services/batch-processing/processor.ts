@@ -1,6 +1,5 @@
-import { ProcessingResult, BatchProcessingStatus, ProcessingSettings, AIRequestPayload } from './types';
+import { ProcessingResult, BatchProcessingStatus, ProcessingSettings} from './types';
 import { analyzeImage } from '@/api/ai-api';
-import fs from 'fs/promises';
 
 class BatchProcessor {
   private subscribers: ((status: BatchProcessingStatus) => void)[] = [];
