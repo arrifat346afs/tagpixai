@@ -7,12 +7,10 @@ import { HashRouter } from "react-router-dom";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <HashRouter>
-      <FileProvider>
-        <App />
-      </FileProvider>
-    </HashRouter>
+      <HashRouter>
+        <FileProvider>
+          <App />
+        </FileProvider>
+      </HashRouter>
   </StrictMode>
 );
-
-

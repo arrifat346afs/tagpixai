@@ -42,17 +42,17 @@ class BatchProcessor {
     try {
       console.log('Resizing image for AI processing...');
       const base64Data = await window.electron.resizeImageForAI(filePath) as string;
-      
+
       if (!base64Data) {
         throw new Error('Failed to resize and convert image');
       }
-      
+
       // Size check is still good to have as a safeguard
       const fileSizeInMB = (base64Data.length * 3/4) / (1024 * 1024);
       if (fileSizeInMB > 10) {
         throw new Error(`Resized image is still too large (${fileSizeInMB.toFixed(2)}MB). Please try a smaller image.`);
       }
-      
+
       return base64Data;
     } catch (error) {
       console.error('Error processing image:', error);
@@ -61,28 +61,28 @@ class BatchProcessor {
   }
 
   private async processFile(
-    filePath: string, 
+    filePath: string,
     settings: ProcessingSettings
   ): Promise<ProcessingResult> {
     try {
       console.log(`Starting to process file: ${filePath}`);
-      
+
       console.log('Converting file to base64...');
       const base64Data = await this.convertToBase64(filePath);
       console.log('Base64 conversion complete');
-      
+
       if (!base64Data) {
         throw new Error('Failed to convert file to base64');
       }
-      
+
       console.log('Calling AI API...');
       const aiResult = await analyzeImage(base64Data, settings);
       console.log('AI API response received:', aiResult);
-      
+
       if (!aiResult) {
         throw new Error('No response from AI API');
       }
-      
+
       return {
         filePath,
         success: true,
@@ -103,7 +103,7 @@ class BatchProcessor {
   }
 
   async process(
-    files: string[], 
+    files: string[],
     settings: ProcessingSettings,
     onProgress?: (status: BatchProcessingStatus) => void,
     onFileComplete?: (result: ProcessingResult) => void
@@ -130,7 +130,7 @@ class BatchProcessor {
       for (const file of files) {
         console.log(`Processing file ${files.indexOf(file) + 1}/${files.length}: ${file}`)
         const result = await this.processFile(file, settings)
-        
+
         if (result.success) {
           this.status.completed++
           console.log(`Successfully processed file: ${file}`)
@@ -145,7 +145,7 @@ class BatchProcessor {
 
         if (settings.api.requestInterval > 0 && files.indexOf(file) < files.length - 1) {
           console.log(`Waiting ${settings.api.requestInterval} seconds before next file...`)
-          await new Promise(resolve => 
+          await new Promise(resolve =>
             setTimeout(resolve, settings.api.requestInterval * 1000)
           )
         }
@@ -168,6 +168,7 @@ class BatchProcessor {
 }
 
 export const batchProcessor = new BatchProcessor();
+
 
 
 

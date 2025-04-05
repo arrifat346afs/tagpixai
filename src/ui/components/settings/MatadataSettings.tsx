@@ -19,18 +19,23 @@ function MatadataSettings() {
     const loadSettings = async () => {
       try {
         const savedSettings = await window.electron.getSettings("metadata");
-        if (
-          typeof savedSettings === "object" &&
-          savedSettings !== null &&
-          "titleLimit" in savedSettings &&
-          "descriptionLimit" in savedSettings &&
-          "keywordLimit" in savedSettings &&
-          typeof savedSettings.titleLimit === "number" &&
-          typeof savedSettings.descriptionLimit === "number" &&
-          typeof savedSettings.keywordLimit === "number"
-        ) {
-          setSettings(savedSettings as typeof DEFAULT_SETTINGS);
+        if (!savedSettings) {
+          // If no settings exist, save the defaults
+          await window.electron.saveSettings("metadata", DEFAULT_SETTINGS);
+          setSettings(DEFAULT_SETTINGS);
+          return;
         }
+
+        // Validate and merge with defaults to ensure all properties exist
+        const validatedSettings = {
+          ...DEFAULT_SETTINGS,
+          ...savedSettings,
+          titleLimit: Number(savedSettings.titleLimit) || DEFAULT_SETTINGS.titleLimit,
+          descriptionLimit: Number(savedSettings.descriptionLimit) || DEFAULT_SETTINGS.descriptionLimit,
+          keywordLimit: Number(savedSettings.keywordLimit) || DEFAULT_SETTINGS.keywordLimit,
+        };
+
+        setSettings(validatedSettings);
       } catch (error) {
         console.error("Failed to load settings:", error);
         toast.error("Failed to load settings!");
@@ -39,20 +44,33 @@ function MatadataSettings() {
     loadSettings();
   }, []);
 
-  const handleReset = () => {
-    setSettings(DEFAULT_SETTINGS);
-    toast.success("Settings reset successfully!", {
-      style: {
-        background: "black",
-        color: "white",
-        border: "1px solid #343333",
-      },
-    });
+  const handleReset = async () => {
+    try {
+      await window.electron.saveSettings("metadata", DEFAULT_SETTINGS);
+      setSettings(DEFAULT_SETTINGS);
+      toast.success("Settings reset successfully!", {
+        style: {
+          background: "black",
+          color: "white",
+          border: "1px solid #343333",
+        },
+      });
+    } catch (error) {
+      console.error("Failed to reset settings:", error);
+      toast.error("Failed to reset settings!");
+    }
   };
 
   const handleSave = async () => {
     try {
-      await window.electron.saveSettings("metadata", settings);
+      // Ensure all values are numbers
+      const settingsToSave = {
+        titleLimit: Number(settings.titleLimit),
+        descriptionLimit: Number(settings.descriptionLimit),
+        keywordLimit: Number(settings.keywordLimit),
+      };
+      
+      await window.electron.saveSettings("metadata", settingsToSave);
       toast.success("Settings saved successfully!", {
         style: {
           background: "black",
@@ -67,7 +85,7 @@ function MatadataSettings() {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 overflow-hidden border-t border-zinc-700/50 ">
         <div className="pb-2">
           <Link to="/">
             <Button>

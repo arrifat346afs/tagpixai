@@ -27,20 +27,26 @@ function FilePreview() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-full p-4">
-      <h2 className="text-background/50 mb-4">File Preview</h2>
+    <div className=" flex flex-col gap-3 items-center justify-center h-full p-4">
+      <h2 className="text-background/50 rounded-md">Preview</h2>
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      <div className="flex items-center justify-center w-full h-full">
+      <div className="flex items-center justify-center">
         {imageSrc && (
-          <img
-            src={imageSrc}
-            alt="Preview"
-            className="max-w-full max-h-full object-contain rounded-md"
-            onError={(e) => {
-              console.error("Error loading image:", e);
-              setError("Failed to load image. Please check if the file exists and is accessible.");
-            }}
-          />
+          <div className="relative w-full h-full flex items-center justify-center">
+            <img
+              src={imageSrc}
+              alt="Preview"
+              className=" max-w-full max-h-full w-auto h-auto object-contain rounded-md border-2 border-zinc-700/50"
+              style={{
+                maxWidth: 'min(100%, 700px)',
+                maxHeight: 'min(100%, 700px)',
+              }}
+              onError={(e) => {
+                console.error("Error loading image:", e);
+                setError("Failed to load image. Please check if the file exists and is accessible.");
+              }}
+            />
+          </div>
         )}
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -5,17 +6,85 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useContext } from "react";
+import { FileContext } from "./FileContext";
 
+// Category mapping object
+const KEYWORD_TO_CATEGORY_MAP: Record<string, string[]> = {
+  "1": ["animal", "wildlife", "pet", "zoo", "creature", "beast", "fauna"],
+  "2": ["building", "architecture", "house", "structure", "construction"],
+  "3": ["business", "corporate", "office", "professional", "commerce"],
+  "4": ["drink", "beverage", "cocktail", "wine", "coffee"],
+  "5": ["environment", "nature", "eco", "climate", "sustainable"],
+  "6": ["mind", "mental", "psychology", "brain", "thinking"],
+  "7": ["food", "cuisine", "meal", "dish", "cooking"],
+  "8": ["graphic", "design", "art", "digital", "illustration"],
+  "9": ["hobby", "leisure", "craft", "pastime", "collection"],
+  "10": ["industry", "factory", "manufacturing", "industrial", "production"],
+  "11": ["landscape", "scenery", "vista", "panorama", "outdoor"],
+  "12": ["lifestyle", "living", "daily", "routine", "life"],
+  "13": ["people", "person", "human", "portrait", "face"],
+  "14": ["plant", "flower", "tree", "botanical", "flora"],
+  "15": ["culture", "tradition", "heritage", "customs", "ritual"],
+  "16": ["science", "research", "laboratory", "experiment", "scientific"],
+  "17": ["social", "community", "gathering", "society", "group"],
+  "18": ["sport", "athletic", "game", "exercise", "fitness"],
+  "19": ["technology", "tech", "digital", "electronic", "device"],
+  "20": ["transport", "vehicle", "car", "transportation", "travel"],
+  "21": ["travel", "tourism", "vacation", "journey", "trip"]
+};
 
-const Catagory = () => {
+const Category = () => {
+  const { selectedFileMetadata } = useContext(FileContext);
+  const [mainCategory, setMainCategory] = useState("1");
+  const [subCategory1, setSubCategory1] = useState("Abstract");
+  const [subCategory2, setSubCategory2] = useState("Abstract");
 
+  useEffect(() => {
+    if (selectedFileMetadata) {
+      const { keywords, title, description } = selectedFileMetadata;
+      
+      // Combine all text for analysis
+      const allText = [
+        ...(keywords || []),
+        title || "",
+        description || ""
+      ].join(" ").toLowerCase();
+
+      // Find matching main category
+      let bestMatch = "1"; // Default to Animals
+      let maxMatches = 0;
+
+      Object.entries(KEYWORD_TO_CATEGORY_MAP).forEach(([categoryId, keywords]) => {
+        const matches = keywords.filter(keyword => allText.includes(keyword)).length;
+        if (matches > maxMatches) {
+          maxMatches = matches;
+          bestMatch = categoryId;
+        }
+      });
+
+      setMainCategory(bestMatch);
+
+      // Set subcategories based on similar logic
+      // You can implement more sophisticated matching for subcategories
+      // This is a simplified example
+      if (allText.includes("nature")) {
+        setSubCategory1("Nature");
+        setSubCategory2("Parks/Outdoor");
+      } else if (allText.includes("business")) {
+        setSubCategory1("Business/Finance");
+        setSubCategory2("Technology");
+      }
+      // Add more subcategory matching logic as needed
+    }
+  }, [selectedFileMetadata]);
 
   return (
     <div className="flex flex-col gap-4 h-full justify-center items-center text-white border-r border-zinc-700/50">
       <div className="w-full flex justify-center items-center p-3">
-        <Select defaultValue="1">
+        <Select value={mainCategory} onValueChange={setMainCategory}>
           <SelectTrigger className="w-full border-background/20 border-1 text-center">
-            <SelectValue placeholder="Animals" />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-[#191818] text-gray-300">
             <SelectItem value="1">Animals</SelectItem>
@@ -44,9 +113,9 @@ const Catagory = () => {
       </div>
       <div className="flex gap-4 w-full px-3">
         <div className="w-full flex justify-center items-center">
-          <Select defaultValue="Abstract">
+          <Select value={subCategory1} onValueChange={setSubCategory1}>
             <SelectTrigger className="w-full border-background/20 border-1 text-center">
-              <SelectValue placeholder="Abstract" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-[#191818] text-gray-300">
               <SelectItem value="Abstract">Abstract</SelectItem>
@@ -87,9 +156,9 @@ const Catagory = () => {
           </Select>
         </div>
         <div className="w-full flex justify-center items-center">
-          <Select defaultValue="Abstract">
+          <Select value={subCategory2} onValueChange={setSubCategory2}>
             <SelectTrigger className="w-full border-background/20 border-1 text-center">
-              <SelectValue placeholder="Abstract" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-[#191818] text-gray-300">
               <SelectItem value="Abstract">Abstract</SelectItem>
@@ -134,4 +203,4 @@ const Catagory = () => {
   );
 };
 
-export default Catagory;
+export default Category;

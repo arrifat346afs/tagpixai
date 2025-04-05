@@ -8,7 +8,6 @@ interface ProgressBarProps {
 }
 
 const ProgressBar = ({ visible = false }: ProgressBarProps) => {
-
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<BatchProcessingStatus | null>(null);
 
@@ -45,17 +44,16 @@ const ProgressBar = ({ visible = false }: ProgressBarProps) => {
   if (!visible) return null;
 
   return (
-    <div className="col-span-3 row-start-4 h-max pb-2">
+    <div className="col-span-3 row-start-4 ">
       {/* Progress bar container */}
       <div className="w-full h-4 rounded-md overflow-hidden relative">
         {/* Progress bar fill */}
         <div
-          className="h-4 bg-cyan-500
- transition-all duration-300 ease-in-out"
+          className="h-4 bg-cyan-500 transition-all duration-300 ease-in-out"
           style={{ width: `${progress}%` }}
         />
         {/* Status text */}
-        <div className="absolute inset-0 text-xs text-white flex justify-between items-center px-1 select-none">
+        <div className="absolute inset-0 text-xs text-zinc-400 flex justify-between items-center p-2 select-none">
           <span>
             Processing: {(status?.completed ?? 0) + (status?.failed ?? 0)} of{" "}
             {status?.total} files
@@ -63,7 +61,7 @@ const ProgressBar = ({ visible = false }: ProgressBarProps) => {
               status.failed > 0 &&
               ` (${status.failed} failed)`}
           </span>
-          <span>{Math.round(progress)}%</span>
+          <span className="text-zinc-400">{Math.round(progress)}%</span>
         </div>
       </div>
     </div>

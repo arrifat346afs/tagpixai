@@ -20,7 +20,15 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
   const [keywords, setKeywords] = useState<string[]>([]);
   const [currentKeyword, setCurrentKeyword] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [titleCharCount, setTitleCharCount] = useState(0);
+  const [descriptionCharCount, setDescriptionCharCount] = useState(0);
 
+  // Add effect to update character counts
+  useEffect(() => {
+    setTitleCharCount(title.replace(/\s/g, "").length);
+    setDescriptionCharCount(description.replace(/\s/g, "").length);
+  }, [title, description]);
+  
   // Update local state when context metadata changes
   useEffect(() => {
     console.log('Metadata update effect triggered');
@@ -230,98 +238,103 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full p-4 border-l border-zinc-700/50 overflow-auto transition-all duration-300 h-full">
-      {/* Debug info - remove after fixing */}
-      {/* <div className="text-xs text-zinc-500">
-        Selected File: {selectedFile || 'none'}
-        <br />
-        Has Metadata: {selectedFileMetadata ? 'yes' : 'no'}
-      </div> */}
-      
-      <div className="flex flex-col gap-2">
-        <span className="text-sm text-zinc-400 select-none">Title</span>
-        <Textarea 
-          value={title}
-          onChange={handleTitleChange}
-          className="w-full bg-background/5 border-zinc-800 text-white" 
-        />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <span className="text-sm text-zinc-400 select-none">Description</span>
-        <Textarea 
-          value={description}
-          onChange={handleDescriptionChange}
-          className="w-full min-h-[100px] bg-background/5 border-zinc-800 text-white" 
-        />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-zinc-400 select-none">Keywords</span>
-          <span className="text-sm text-zinc-400 select-none">
-            {keywords.length} keywords
-          </span>
+    <div className="h-full flex flex-col">
+      <div className="flex flex-col gap-4 w-full p-4 border-l border-zinc-700/50 overflow-y-auto h-full">
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-zinc-400 select-none">Title</span>
+            <span className="text-sm text-zinc-500 select-none">{titleCharCount} characters</span>
+          </div>
+          <Textarea 
+            value={title}
+            onChange={handleTitleChange}
+            className="w-full bg-background/5 border-zinc-800 text-white" 
+          />
         </div>
-        <Input
-          placeholder="Add keywords (press Enter)"
-          value={currentKeyword}
-          onChange={(e) => setCurrentKeyword(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="w-full bg-background/5 border-zinc-800 text-white"
-        />
-      </div>
 
-      <div className="flex flex-col gap-2">
-        <div className="relative">
-          <div className="min-h-[9rem] max-h-[calc(100vh-20rem)] overflow-y-auto rounded-md border border-zinc-800 bg-background/5">
-            <div className="flex flex-wrap gap-2 p-2">
-              {keywords.length === 0 ? (
-                <div className="w-full h-full flex items-center justify-center text-zinc-700">
-                  No keywords
-                </div>
-              ) : (
-                keywords.map((keyword, index) => (
-                  <Badge
-                    key={index}
-                    variant="default"
-                    className="flex items-center gap-1 bg-background/10"
-                  >
-                    {keyword}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        removeKeyword(keyword);
-                      }}
-                      className="flex items-center justify-center"
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-zinc-400 select-none">Description</span>
+            <span className="text-sm text-zinc-500 select-none">{descriptionCharCount} characters</span>
+          </div>
+          <Textarea 
+            value={description}
+            onChange={handleDescriptionChange}
+            className="w-full min-h-[100px] bg-background/5 border-zinc-800 text-white" 
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-zinc-400 select-none">Keywords</span>
+            <span className="text-sm text-zinc-400 select-none">
+              {keywords.length} keywords
+            </span>
+          </div>
+          <Input
+            placeholder="Add keywords (press Enter)"
+            value={currentKeyword}
+            onChange={(e) => setCurrentKeyword(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="w-full bg-background/5 border-zinc-800 text-white"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <div className="relative">
+            <div className="min-h-[9rem] max-h-[calc(100vh-20rem)]  rounded-md border border-zinc-800 bg-background/5">
+              <div className="flex flex-wrap gap-2 p-2 overflow-y-auto h-[150px]">
+                {keywords.length === 0 ? (
+                  <div className="w-full h-full flex items-center justify-center text-zinc-700">
+                    No keywords
+                  </div>
+                ) : (
+                  keywords.map((keyword, index) => (
+                    <Badge
+                      key={index}
+                      variant="default"
+                      className="flex items-center gap-1 bg-background/10"
                     >
-                      <X className="h-3 w-3 !cursor-pointer hover:text-red-400 transition-colors pointer-events-auto" />
-                    </button>
-                  </Badge>
-                ))
-              )}
+                      {keyword}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          removeKeyword(keyword);
+                        }}
+                        className="flex items-center justify-center"
+                      >
+                        <X className="h-3 w-3 !cursor-pointer hover:text-red-400 transition-colors pointer-events-auto" />
+                      </button>
+                    </Badge>
+                  ))
+                )}
+              </div>
+            </div>
+            <div className="absolute right-2 bottom-2 text-xs text-zinc-500">
+              {keywords.length > 0 && "Scroll to see more"}
             </div>
           </div>
-          <div className="absolute right-2 bottom-2 text-xs text-zinc-500">
-            {keywords.length > 0 && "Scroll to see more"}
-          </div>
         </div>
-      </div>
-      <div>
-        <Button 
-          onClick={handleGenerate}
-          disabled={isGenerating || !selectedFile}
-        >
-          {isGenerating ? 'Generating...' : 'Generate Metadata'}
-        </Button>
+        <div>
+          <Button 
+            onClick={handleGenerate}
+            disabled={isGenerating || !selectedFile}
+          >
+            {isGenerating ? 'Generating...' : 'Generate Metadata'}
+          </Button>
+        </div>
       </div>
     </div>
   );
 };
 
 export default MetadataInput;
+
+
+
+
 
 
 

@@ -77,7 +77,8 @@ const ApiSettings = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4  border-t border-zinc-700/50">
+      
       <div>
         <div className="pb-2">
           <Link to="/">

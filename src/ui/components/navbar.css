@@ -8,3 +8,7 @@
 .nav-bar [role="button"] {
   -webkit-app-region: no-drag;
 }
+
+.some{
+  background-color: #a1a1a1;
+}

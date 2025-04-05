@@ -1,18 +1,20 @@
-import { useContext } from 'react';
-import { FileContext } from '../FileContext';
-import { Button } from '@/components/ui/button';
+import { useContext } from "react";
+import { FileContext } from "../FileContext";
+import { Button } from "@/components/ui/button";
 
 function FileSelector() {
-    const { setSelectedFiles } = useContext(FileContext);
+  const { setSelectedFiles } = useContext(FileContext);
 
-    const handleOpenDialog = async () => {
-        const files = await window.electron.openFileDialog();
-        setSelectedFiles(files);
-    };
+  const handleOpenDialog = async () => {
+    const files = await window.electron.openFileDialog();
+    setSelectedFiles(files);
+  };
 
-    return (
-        <Button onClick={handleOpenDialog}>Select Files</Button>
-    );
+  return (
+    <Button className="bg-transparent" onClick={handleOpenDialog}>
+      Select Files
+    </Button>
+  );
 }
 
 export default FileSelector;

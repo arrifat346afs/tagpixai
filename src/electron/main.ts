@@ -1,17 +1,26 @@
 import { app, ipcMain, protocol, BrowserWindow, dialog } from 'electron';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 import { existsSync, mkdirSync, rmSync } from 'fs';
 import { isDev } from './util.js';
 import { getPreloadPath } from './pathResolver.js';
 import Sharp from 'sharp';
-import Store  from 'electron-store';
+import Store from 'electron-store';
+
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Initialize the store with a schema
 const store = new Store({
     name: 'metadata-store',
     defaults: {
-        metadata: {}
+        settings: {
+            metadata: {},
+            api: {}
+        },
+        generatedMetadata: {}
     }
 });
 
@@ -40,6 +49,7 @@ app.whenReady().then(() => {
     width: 1200,
     height: 800,
     autoHideMenuBar: true,
+    icon: path.join(__dirname, 'assets', 'TagPix AI.icns'),
     frame: false,
     webPreferences: {
       preload: getPreloadPath(),
@@ -66,7 +76,7 @@ ipcMain.handle('open-file-dialog', async () => {
 // Add this function for thumbnail generation
 async function generateThumbnail(filePath: string): Promise<string> {
   const thumbnailsDir = path.join(app.getPath('userData'), 'thumbnails');
-  
+
   // Create thumbnails directory if it doesn't exist
   if (!existsSync(thumbnailsDir)) {
     mkdirSync(thumbnailsDir);
@@ -82,7 +92,7 @@ async function generateThumbnail(filePath: string): Promise<string> {
         fit: 'fill',
         // position: 'centre'
       })
-      .jpeg({ 
+      .jpeg({
         quality: 80,
         chromaSubsampling: '4:4:4'  // Better quality for small images
       })
@@ -106,14 +116,14 @@ ipcMain.handle('generate-thumbnail', async (_, filePath: string) => {
 // Add these IPC handlers
 ipcMain.handle('get-settings', (_, key: string) => {
   console.log('Getting settings for key:', key);
-  const value = store.get(key);
+  const value = store.get(`settings.${key}`);
   console.log('Retrieved settings:', value);
   return value;
 });
 
 ipcMain.handle('save-settings', (_, key: string, value: any) => {
   console.log('Saving settings:', { key, value });
-  store.set(key, value);
+  store.set(`settings.${key}`, value);
 });
 
 // Add this IPC handler for reading files
@@ -121,15 +131,15 @@ ipcMain.handle('read-file-base64', async (_event, filePath: string) => {
   try {
     // Read the file as a buffer
     const buffer = await fs.readFile(filePath);
-    
+
     // Convert to base64
     const base64String = buffer.toString('base64');
-    
+
     // For images, we should include the data URL prefix
     const extension = path.extname(filePath).toLowerCase();
     const mimeType = getMimeType(extension);
     const dataUrl = `data:${mimeType};base64,${base64String}`;
-    
+
     return dataUrl;
   } catch (error) {
     console.error('Error reading file:', error);
@@ -147,42 +157,65 @@ function getMimeType(extension: string): string {
     '.webp': 'image/webp',
     '.bmp': 'image/bmp'
   };
-  
+
   return mimeTypes[extension] || 'application/octet-stream';
 }
 
-// Add this function for image resizing
+// Function for image resizing optimized for AI processing
 async function resizeImageForAI(filePath: string): Promise<string> {
-  const size = 256;  // Standard size for most AI vision models
-  
+  // Get image metadata for logging purposes
+  const metadata = await Sharp(filePath).metadata();
+
   const tempDir = path.join(app.getPath('temp'), 'ai-processing');
   if (!existsSync(tempDir)) {
     mkdirSync(tempDir, { recursive: true });
   }
-  
+
   const tempFileName = `${Date.now()}-${path.basename(filePath)}`;
   const tempFilePath = path.join(tempDir, tempFileName);
 
+  // Fixed size of 225 pixels for all images
+  const targetSize = 256;
+
+  // Fixed quality setting - balanced for size and quality
+  const quality = 70;
+
+  // Log original image info
+  const originalSizeMB = (metadata.size || 0) / (1024 * 1024);
+  console.log(`Processing image: ${path.basename(filePath)} (${originalSizeMB.toFixed(2)}MB, ${metadata.width}x${metadata.height})`);
+
   // Resize the image with optimized settings for AI processing
   await Sharp(filePath)
-    .resize(size, size, {
-      fit: 'contain',     // Changed to 'contain' to ensure the entire image is visible
+    .resize(targetSize, targetSize, {
+      fit: 'contain',     // Ensure the entire image is visible
       background: { r: 255, g: 255, b: 255, alpha: 1 }, // White background for padding
-      withoutEnlargement: true
+      withoutEnlargement: false // Allow upscaling small images to the target size
     })
-    .jpeg({ 
-      quality: 80,        // Slightly increased quality since file size will be smaller anyway
-      mozjpeg: true,
-      chromaSubsampling: '4:2:0'
+    .jpeg({
+      quality,            // Fixed quality for all images
+      mozjpeg: true,      // Use mozjpeg for better compression
+      progressive: true,  // Progressive loading
+      chromaSubsampling: '4:2:0', // Standard subsampling for compression
+      trellisQuantisation: true,  // Additional compression
+      overshootDeringing: true,   // Reduce ringing artifacts
+      optimizeScans: true         // Optimize progressive scans
     })
     .toFile(tempFilePath);
 
+  console.log(`Image resized to ${targetSize}x${targetSize} pixels with quality: ${quality}`);
+
   const buffer = await fs.readFile(tempFilePath);
   const base64 = buffer.toString('base64');
-  
+
   // Clean up the temporary file
   await fs.unlink(tempFilePath).catch(console.error);
-  
+
+  // Log the size reduction
+  const originalSize = metadata.size || 0;
+  const newSize = buffer.length;
+  const reductionPercent = ((originalSize - newSize) / originalSize * 100).toFixed(2);
+  console.log(`Image optimized: ${reductionPercent}% reduction (${(originalSize/1024/1024).toFixed(2)}MB → ${(newSize/1024/1024).toFixed(2)}MB)`);
+
   return base64;
 }
 
@@ -199,15 +232,11 @@ ipcMain.handle('resize-image-for-ai', async (_, filePath: string) => {
 // Add these handlers for metadata operations
 ipcMain.handle('get-file-metadata', async (_, filePath: string) => {
   try {
-    // Create a safe key from the file path
     const key = Buffer.from(filePath).toString('base64');
     console.log('Getting metadata with key:', key);
-    
-    // Retrieve metadata
-    const metadata = store.get(`metadata.${key}`);
+    const metadata = store.get(`generatedMetadata.${key}`);
     console.log('Retrieved metadata:', metadata);
-    
-    return metadata || null; // Return null instead of undefined if not found
+    return metadata || null;
   } catch (error) {
     console.error('Failed to get metadata:', error);
     throw error;
@@ -216,26 +245,15 @@ ipcMain.handle('get-file-metadata', async (_, filePath: string) => {
 
 ipcMain.handle('save-file-metadata', async (_, filePath: string, metadata: any) => {
   try {
-    // Create a safe key from the file path
     const key = Buffer.from(filePath).toString('base64');
     console.log('Saving metadata with key:', key);
-    
-    // Store metadata
-    store.set(`metadata.${key}`, metadata);
-    
-    // Verify the save
-    const saved = store.get(`metadata.${key}`);
-    console.log('Verified saved metadata:', saved);
-    
+    store.set(`generatedMetadata.${key}`, metadata);
     return true;
   } catch (error) {
     console.error('Failed to save metadata:', error);
     throw error;
   }
 });
-
-// Remove any existing clear-metadata handlers
-// Keep only the necessary handlers for saving and retrieving metadata
 
 // Clean up temp files when app closes
 app.on('will-quit', () => {
@@ -244,15 +262,15 @@ app.on('will-quit', () => {
     if (existsSync(tempMetadataDir)) {
       rmSync(tempMetadataDir, { recursive: true, force: true });
     }
-    
+
     // Clean up thumbnails directory
     if (existsSync(thumbnailsDir)) {
       rmSync(thumbnailsDir, { recursive: true, force: true });
     }
-    
-    // Clear only the AI-generated metadata from the store
-    store.set('metadata', {});
-    
+
+    // Only clear generated metadata, not settings
+    store.set('generatedMetadata', {});
+
     console.log('Successfully cleared AI-generated content on quit');
   } catch (error) {
     console.error('Error cleaning up AI-generated content:', error);
