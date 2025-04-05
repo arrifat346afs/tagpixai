@@ -1,9 +1,9 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electron", {
-  readFileBase64: (filePath: string) =>
-    ipcRenderer.invoke("read-file-base64", filePath),
+  readFileBase64: (filePath: string) => ipcRenderer.invoke("read-file-base64", filePath),
   openFileDialog: () => ipcRenderer.invoke("open-file-dialog"),
+  openDirectoryDialog: () => ipcRenderer.invoke("open-directory-dialog"),
   generateThumbnail: (filePath: string) =>
     ipcRenderer.invoke("generate-thumbnail", filePath),
   getSettings: (key: string) => ipcRenderer.invoke("get-settings", key),
@@ -40,4 +40,13 @@ contextBridge.exposeInMainWorld("electron", {
   minimize: () => ipcRenderer.send("minimize-window"),
   maximize: () => ipcRenderer.send("maximize-window"),
   close: () => ipcRenderer.send("close-window"),
+  saveCsvFile: (filePath: string, content: string) =>
+    ipcRenderer.invoke("save-csv-file", filePath, content),
+  getTempCategories: (filePath: string) => 
+    ipcRenderer.invoke('get-temp-categories', filePath),
+  saveTempCategories: (filePath: string, categories: {
+    adobe: string;
+    shutter1: string;
+    shutter2: string;
+  }) => ipcRenderer.invoke('save-temp-categories', filePath, categories),
 });

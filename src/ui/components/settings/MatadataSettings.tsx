@@ -19,23 +19,26 @@ function MatadataSettings() {
     const loadSettings = async () => {
       try {
         const savedSettings = await window.electron.getSettings("metadata");
+        const savedOutputDirectory = await window.electron.getSettings("outputDirectory");
+        
         if (!savedSettings) {
-          // If no settings exist, save the defaults
           await window.electron.saveSettings("metadata", DEFAULT_SETTINGS);
           setSettings(DEFAULT_SETTINGS);
-          return;
+        } else {
+          const validatedSettings = {
+            ...DEFAULT_SETTINGS,
+            ...savedSettings,
+            titleLimit: Number(savedSettings.titleLimit) || DEFAULT_SETTINGS.titleLimit,
+            descriptionLimit: Number(savedSettings.descriptionLimit) || DEFAULT_SETTINGS.descriptionLimit,
+            keywordLimit: Number(savedSettings.keywordLimit) || DEFAULT_SETTINGS.keywordLimit,
+          };
+          setSettings(validatedSettings);
         }
 
-        // Validate and merge with defaults to ensure all properties exist
-        const validatedSettings = {
-          ...DEFAULT_SETTINGS,
-          ...savedSettings,
-          titleLimit: Number(savedSettings.titleLimit) || DEFAULT_SETTINGS.titleLimit,
-          descriptionLimit: Number(savedSettings.descriptionLimit) || DEFAULT_SETTINGS.descriptionLimit,
-          keywordLimit: Number(savedSettings.keywordLimit) || DEFAULT_SETTINGS.keywordLimit,
-        };
-
-        setSettings(validatedSettings);
+        // Set the saved output directory if it exists
+        if (savedOutputDirectory) {
+          setSelectedFilePath(savedOutputDirectory);
+        }
       } catch (error) {
         console.error("Failed to load settings:", error);
         toast.error("Failed to load settings!");
@@ -81,6 +84,31 @@ function MatadataSettings() {
     } catch (error) {
       console.error("Failed to save settings:", error);
       toast.error("Failed to save settings!");
+    }
+  };
+
+  const [selectedFilePath, setSelectedFilePath] = useState("");
+
+  const handleFileSelect = async () => {
+    try {
+      console.log('Opening directory dialog...'); // Debug log
+      const directories = await window.electron.openDirectoryDialog();
+      console.log('Selected directories:', directories); // Debug log
+      
+      if (directories && Array.isArray(directories) && directories.length > 0) {
+        const selectedPath = directories[0];
+        setSelectedFilePath(selectedPath);
+        
+        // Save the output directory path to electron store
+        await window.electron.saveSettings("outputDirectory", selectedPath);
+        
+        toast.success('Directory selected successfully!');
+      } else {
+        console.log('No directory selected or invalid response'); // Debug log
+      }
+    } catch (error) {
+      console.error('Error selecting directory:', error);
+      toast.error(`Failed to select directory: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -164,6 +192,24 @@ function MatadataSettings() {
             <Button className="w-30" onClick={handleSave}>
               Save
             </Button>
+          </div>
+          <div className="flex flex-col gap-2">
+            <h4 className="p-2">Select Output Directory</h4>
+            <div className="flex gap-2">
+              <Input
+                className="border-background/20 flex-grow"
+                type="text"
+                value={selectedFilePath}
+                readOnly
+                placeholder="No directory selected"
+              />
+              <Button
+                className="w-30"
+                onClick={handleFileSelect}
+              >
+                Browse
+              </Button>
+            </div>
           </div>
         </div>
       </div>

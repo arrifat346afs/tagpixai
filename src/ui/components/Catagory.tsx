@@ -36,14 +36,87 @@ const KEYWORD_TO_CATEGORY_MAP: Record<string, string[]> = {
 
 const Category = () => {
   const { selectedFileMetadata } = useContext(FileContext);
-  const [mainCategory, setMainCategory] = useState("1");
-  const [subCategory1, setSubCategory1] = useState("Abstract");
-  const [subCategory2, setSubCategory2] = useState("Abstract");
+  const [adobeStock, setAdobeStock] = useState("1");
+  const [shutterStock1, setShutterStock1] = useState("Abstract");
+  const [shutterStock2, setShutterStock2] = useState("Abstract");
+
+  // Helper function to find the best Adobe Stock category based on keywords
+  const findBestAdobeCategory = (text: string) => {
+    let bestMatch = "1"; // Default to Animals
+    let maxMatches = 0;
+
+    Object.entries(KEYWORD_TO_CATEGORY_MAP).forEach(([categoryId, keywords]) => {
+      const matches = keywords.filter(keyword => text.includes(keyword)).length;
+      if (matches > maxMatches) {
+        maxMatches = matches;
+        bestMatch = categoryId;
+      }
+    });
+
+    setAdobeStock(bestMatch);
+  };
+
+  // Load saved categories when component mounts or file changes
+  useEffect(() => {
+    const loadTempCategories = async () => {
+      if (selectedFileMetadata?.filePath) {
+        const savedCategories = await window.electron.getTempCategories(selectedFileMetadata.filePath) as {
+          adobe?: string;
+          shutter1?: string;
+          shutter2?: string;
+        } | null;
+
+        if (savedCategories) {
+          // Check if properties exist before setting them
+          if (savedCategories.adobe) {
+            setAdobeStock(savedCategories.adobe);
+          }
+          if (savedCategories.shutter1) {
+            setShutterStock1(savedCategories.shutter1);
+          }
+          if (savedCategories.shutter2) {
+            setShutterStock2(savedCategories.shutter2);
+          }
+          console.log('Loaded temp categories:', savedCategories);
+        }
+      }
+    };
+    loadTempCategories();
+  }, [selectedFileMetadata]);
+
+  // Save categories whenever they change
+  useEffect(() => {
+    const saveTempCategories = async () => {
+      if (selectedFileMetadata?.filePath) {
+        const categories = {
+          adobe: adobeStock,
+          shutter1: shutterStock1,
+          shutter2: shutterStock2
+        };
+
+        try {
+          await window.electron.saveTempCategories(selectedFileMetadata.filePath, categories);
+          console.log('Saved temp categories for file:', selectedFileMetadata.filePath);
+          console.log('Categories saved:', categories);
+
+          // Verify the save by immediately reading back
+          const savedCategories = await window.electron.getTempCategories(selectedFileMetadata.filePath);
+          console.log('Verified saved categories:', savedCategories);
+        } catch (error) {
+          console.error('Failed to save categories:', error);
+        }
+      } else {
+        console.warn('Cannot save categories: No file path in selectedFileMetadata');
+      }
+    };
+
+    saveTempCategories();
+  }, [adobeStock, shutterStock1, shutterStock2, selectedFileMetadata]);
 
   useEffect(() => {
     if (selectedFileMetadata) {
       const { keywords, title, description } = selectedFileMetadata;
-      
+
       // Combine all text for analysis
       const allText = [
         ...(keywords || []),
@@ -51,38 +124,114 @@ const Category = () => {
         description || ""
       ].join(" ").toLowerCase();
 
-      // Find matching main category
-      let bestMatch = "1"; // Default to Animals
-      let maxMatches = 0;
+      // Find matching main category for Adobe Stock
+      // Check if there's a keyword that starts with 'adobe_category:'
+      const adobeCategoryKeyword = keywords?.find(keyword =>
+        keyword.toLowerCase().startsWith('adobe_category:'));
 
-      Object.entries(KEYWORD_TO_CATEGORY_MAP).forEach(([categoryId, keywords]) => {
-        const matches = keywords.filter(keyword => allText.includes(keyword)).length;
-        if (matches > maxMatches) {
-          maxMatches = matches;
-          bestMatch = categoryId;
+      if (adobeCategoryKeyword) {
+        // Extract the category ID from the keyword
+        const categoryId = adobeCategoryKeyword.split(':')[1]?.trim();
+        if (categoryId && Object.keys(KEYWORD_TO_CATEGORY_MAP).includes(categoryId)) {
+          setAdobeStock(categoryId);
+        } else {
+          // Fallback to keyword matching
+          findBestAdobeCategory(allText);
         }
-      });
-
-      setMainCategory(bestMatch);
+      } else {
+        // No explicit category found, use keyword matching
+        findBestAdobeCategory(allText);
+      }
 
       // Set subcategories based on similar logic
       // You can implement more sophisticated matching for subcategories
       // This is a simplified example
-      if (allText.includes("nature")) {
-        setSubCategory1("Nature");
-        setSubCategory2("Parks/Outdoor");
-      } else if (allText.includes("business")) {
-        setSubCategory1("Business/Finance");
-        setSubCategory2("Technology");
-      }
-      // Add more subcategory matching logic as needed
+      // Shutterstock category mapping (exact option text)
+      const shutterstockCategories = {
+        'Abstract': ['abstract', 'pattern', 'design'],
+        'Animals/Wildlife': ['animal', 'wildlife', 'pet', 'zoo', 'fauna'],
+        'Arts': ['art', 'painting', 'illustration', 'drawing'],
+        'Backgrounds/Textures': ['background', 'texture', 'wallpaper', 'grunge'],
+        'Beauty/Fashion': ['beauty', 'fashion', 'makeup', 'style'],
+        'Buildings/Landmarks': ['building', 'architecture', 'landmark', 'cityscape'],
+        'Business/Finance': ['business', 'finance', 'money', 'corporate'],
+        'Celebrities': ['celebrity', 'famous', 'star', 'entertainment'],
+        'Education': ['education', 'school', 'learning', 'books'],
+        'Food and drink': ['food', 'drink', 'cuisine', 'meal'],
+        'Healthcare/Medical': ['healthcare', 'medical', 'hospital', 'doctor'],
+        'Holidays': ['holiday', 'celebration', 'festive', 'Christmas'],
+        'Industrial': ['industrial', 'factory', 'manufacturing', 'engineering'],
+        'Interiors': ['interior', 'design', 'home', 'furniture'],
+        'Miscellaneous': ['miscellaneous', 'various', 'random'],
+        'Nature': ['nature', 'tree', 'forest', 'mountain', 'landscape'],
+        'Objects': ['object', 'item', 'thing', 'accessory'],
+        'Parks/Outdoor': ['park', 'outdoor', 'recreation', 'nature'],
+        'People': ['people', 'person', 'crowd', 'portrait'],
+        'Religion': ['religion', 'faith', 'worship', 'spiritual'],
+        'Science': ['science', 'experiment', 'laboratory', 'research'],
+        'Signs/Symbols': ['sign', 'symbol', 'icon', 'signal'],
+        'Sports/Recreation': ['sports', 'recreation', 'fitness', 'exercise'],
+        'Technology': ['tech', 'computer', 'software', 'hardware', 'digital'],
+        'Transportation': ['transport', 'vehicle', 'car', 'travel'],
+        'Vintage': ['vintage', 'retro', 'old', 'classic']
+      };
+
+      // Find best matching categories for Shutterstock
+      let bestMatch1 = "Abstract";
+      let bestMatch2 = "Abstract";
+      let maxMatches1 = 0;
+      let maxMatches2 = 0;
+
+      Object.entries(shutterstockCategories).forEach(([category, keywords]) => {
+        const matches = keywords.filter(keyword => allText.includes(keyword)).length;
+        if (matches > maxMatches1) {
+          // Move current best match to second place
+          maxMatches2 = maxMatches1;
+          bestMatch2 = bestMatch1;
+          // Set new best match
+          maxMatches1 = matches;
+          bestMatch1 = category;
+        } else if (matches > maxMatches2 && category !== bestMatch1) {
+          maxMatches2 = matches;
+          bestMatch2 = category;
+        }
+      });
+
+      setShutterStock1(bestMatch1);
+      setShutterStock2(bestMatch2);
     }
   }, [selectedFileMetadata]);
 
+  // Debug function to check current categories
+  const debugCategories = async () => {
+    try {
+      console.log('DEBUG CATEGORY: Current state values:');
+      console.log('- adobeStock:', adobeStock);
+      console.log('- shutterStock1:', shutterStock1);
+      console.log('- shutterStock2:', shutterStock2);
+      console.log('- selectedFileMetadata:', selectedFileMetadata);
+
+      if (selectedFileMetadata?.filePath) {
+        const savedCategories = await window.electron.getTempCategories(selectedFileMetadata.filePath);
+        console.log('DEBUG CATEGORY: Saved categories for current file:', savedCategories);
+      } else {
+        console.log('DEBUG CATEGORY: No file selected');
+      }
+    } catch (error) {
+      console.error('Debug error:', error);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4 h-full justify-center items-center text-white border-r border-zinc-700/50">
-      <div className="w-full flex justify-center items-center p-3">
-        <Select value={mainCategory} onValueChange={setMainCategory}>
+      <div className="w-full flex flex-col gap-2 items-center p-3">
+        <button
+          onClick={debugCategories}
+          className="text-xs text-gray-500 hover:text-gray-300 mb-1"
+        >
+          Debug Categories
+        </button>
+        <Select value={adobeStock} onValueChange={setAdobeStock}>
           <SelectTrigger className="w-full border-background/20 border-1 text-center">
             <SelectValue />
           </SelectTrigger>
@@ -113,7 +262,7 @@ const Category = () => {
       </div>
       <div className="flex gap-4 w-full px-3">
         <div className="w-full flex justify-center items-center">
-          <Select value={subCategory1} onValueChange={setSubCategory1}>
+          <Select value={shutterStock1} onValueChange={setShutterStock1}>
             <SelectTrigger className="w-full border-background/20 border-1 text-center">
               <SelectValue />
             </SelectTrigger>
@@ -156,7 +305,7 @@ const Category = () => {
           </Select>
         </div>
         <div className="w-full flex justify-center items-center">
-          <Select value={subCategory2} onValueChange={setSubCategory2}>
+          <Select value={shutterStock2} onValueChange={setShutterStock2}>
             <SelectTrigger className="w-full border-background/20 border-1 text-center">
               <SelectValue />
             </SelectTrigger>

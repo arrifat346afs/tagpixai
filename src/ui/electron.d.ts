@@ -11,7 +11,7 @@ interface ApiSettings {
     requestInterval: number;
 }
 
-type SettingsKey = 'metadata' | 'api';
+type SettingsKey = 'metadata' | 'api' | 'outputDirectory';
 type SettingsValue<T extends SettingsKey> = T extends 'metadata' 
     ? MetadataSettings 
     : T extends 'api' 
@@ -19,6 +19,12 @@ type SettingsValue<T extends SettingsKey> = T extends 'metadata'
     : never;
 
 interface ElectronAPI {
+    getTempCategories(filePath: any): unknown;
+    saveTempCategories(filePath: any, categories: { adobe: string; shutter1: string; shutter2: string; }): unknown;
+    saveCsvFile(fullPath: string, csvContent: string): unknown;
+    saveCSVFile(fullPath: string, csvContent: string): unknown;
+    openDirectoryDialog(): unknown;
+    showOpenDialog(arg0: { properties: string[]; filters: { name: string; extensions: string[]; }[]; }): unknown;
     close(): void;
     maximize(): void;
     minimize(): void;
@@ -36,6 +42,7 @@ interface ElectronAPI {
 declare interface Window {
     electron: ElectronAPI;
 }
+
 
 
 

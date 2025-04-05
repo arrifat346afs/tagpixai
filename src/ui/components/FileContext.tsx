@@ -6,11 +6,13 @@ interface FileContextType {
   selectedFile: string | null;
   setSelectedFile: (file: string | null) => void;
   selectedFileMetadata: {
+    filePath: string;
     title: string;
     description: string;
     keywords: string[];
   } | null;
   setSelectedFileMetadata: (metadata: {
+    filePath: string;
     title: string;
     description: string;
     keywords: string[];
@@ -30,6 +32,7 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedFileMetadata, setSelectedFileMetadata] = useState<{
+    filePath: string;
     title: string;
     description: string;
     keywords: string[];

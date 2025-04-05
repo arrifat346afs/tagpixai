@@ -24,6 +24,13 @@ const store = new Store({
     }
 });
 
+const tempCategoryStore = new Store({
+  name: 'temp-categories',
+  defaults: {
+    categories: {}
+  }
+});
+
 const tempMetadataDir = path.join(app.getPath('temp'), 'app-temp-metadata');
 const thumbnailsDir = path.join(app.getPath('userData'), 'thumbnails');
 
@@ -71,6 +78,19 @@ ipcMain.handle('open-file-dialog', async () => {
     properties: ['openFile', 'multiSelections']
   });
   return canceled ? [] : filePaths;
+});
+
+ipcMain.handle('open-directory-dialog', async () => {
+  try {
+    const result = await dialog.showOpenDialog({
+      properties: ['openDirectory', 'createDirectory']
+    });
+    console.log('Directory dialog result:', result); // Add logging for debugging
+    return result.canceled ? [] : result.filePaths;
+  } catch (error) {
+    console.error('Directory dialog error:', error);
+    throw error; // Propagate error to renderer
+  }
 });
 
 // Add this function for thumbnail generation
@@ -253,6 +273,41 @@ ipcMain.handle('save-file-metadata', async (_, filePath: string, metadata: any) 
     console.error('Failed to save metadata:', error);
     throw error;
   }
+});
+
+// Add this IPC handler for saving CSV files
+ipcMain.handle('save-csv-file', async (_, filePath: string, content: string) => {
+  try {
+    await fs.writeFile(filePath, content, 'utf-8');
+    return true;
+  } catch (error) {
+    console.error('Error saving CSV file:', error);
+    throw error;
+  }
+});
+
+// Add these IPC handlers
+ipcMain.handle('save-temp-categories', async (_, filePath: string, categories: any) => {
+  const currentCategories = tempCategoryStore.get('categories') as Record<string, any>;
+  currentCategories[filePath] = categories;
+  tempCategoryStore.set('categories', currentCategories);
+  console.log('Saved temp categories:', categories);
+});
+
+ipcMain.handle('get-temp-categories', async (_, filePath: string) => {
+  const categories = tempCategoryStore.get('categories') as Record<string, any>;
+  return categories[filePath] || null;
+});
+
+// Don't clear temp categories when app starts
+app.on('ready', () => {
+  console.log('App ready - keeping temp categories for export');
+});
+
+// Clear temp categories when app quits
+app.on('before-quit', () => {
+  tempCategoryStore.set('categories', {});
+  console.log('Cleared temp categories on quit');
 });
 
 // Clean up temp files when app closes

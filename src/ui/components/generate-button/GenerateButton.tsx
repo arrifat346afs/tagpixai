@@ -17,7 +17,7 @@ const GenerateButton = () => {
   const updateStatus = (message: string) => {
     
     console.log('Status:', message)
-    toast.info(message, { duration: 2000 })
+    // toast.info(message, { duration: 2000 })
   }
 
   const handleProgress = (status: BatchProcessingStatus) => {

@@ -3,6 +3,7 @@ import { analyzeImage } from '@/api/ai-api';
 
 class BatchProcessor {
   private subscribers: ((status: BatchProcessingStatus) => void)[] = [];
+  private fileCompleteSubscribers: ((result: ProcessingResult) => void)[] = [];
 
   subscribe(callback: (status: BatchProcessingStatus) => void) {
     this.subscribers.push(callback);
@@ -11,6 +12,13 @@ class BatchProcessor {
       if (index > -1) {
         this.subscribers.splice(index, 1);
       }
+    };
+  }
+
+  subscribeToFileComplete(callback: (result: ProcessingResult) => void) {
+    this.fileCompleteSubscribers.push(callback);
+    return () => {
+      this.fileCompleteSubscribers = this.fileCompleteSubscribers.filter(cb => cb !== callback);
     };
   }
 
@@ -83,7 +91,7 @@ class BatchProcessor {
         throw new Error('No response from AI API');
       }
 
-      return {
+      const result = {
         filePath,
         success: true,
         metadata: {
@@ -92,13 +100,22 @@ class BatchProcessor {
           keywords: aiResult.keywords
         }
       };
+
+      // Notify subscribers when a file is completed
+      this.fileCompleteSubscribers.forEach(callback => callback(result));
+
+      return result;
     } catch (error) {
-      console.error('Error processing file:', error);
-      return {
+      const failedResult = {
         filePath,
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
       };
+
+      // Notify subscribers even on failure
+      this.fileCompleteSubscribers.forEach(callback => callback(failedResult));
+
+      return failedResult;
     }
   }
 
@@ -168,6 +185,7 @@ class BatchProcessor {
 }
 
 export const batchProcessor = new BatchProcessor();
+
 
 
 

@@ -28,19 +28,19 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
     setTitleCharCount(title.replace(/\s/g, "").length);
     setDescriptionCharCount(description.replace(/\s/g, "").length);
   }, [title, description]);
-  
+
   // Update local state when context metadata changes
   useEffect(() => {
     console.log('Metadata update effect triggered');
     console.log('Current selectedFileMetadata:', selectedFileMetadata);
-    
+
     if (selectedFileMetadata) {
         console.log('Setting metadata values:', {
             title: selectedFileMetadata.title,
             description: selectedFileMetadata.description,
             keywords: selectedFileMetadata.keywords
         });
-        
+
         setTitle(selectedFileMetadata.title || '');
         setDescription(selectedFileMetadata.description || '');
         setKeywords(selectedFileMetadata.keywords || []);
@@ -60,7 +60,7 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
           console.log('Loading metadata for:', selectedFile);
           const metadata = await window.electron.getFileMetadata(selectedFile);
           console.log('Loaded metadata:', metadata);
-          
+
           if (metadata) {
             const normalizedMetadata = {
               title: metadata.title || '',
@@ -68,7 +68,7 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
               keywords: metadata.keywords || []
             };
             setSelectedFileMetadata(normalizedMetadata);
-            
+
             // Also update local state
             setTitle(normalizedMetadata.title);
             setDescription(normalizedMetadata.description);
@@ -102,7 +102,7 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
         await window.electron.saveFileMetadata(selectedFile, newMetadata);
         setSelectedFileMetadata(newMetadata);
         onMetadataChange?.(newMetadata);
-        
+
         // Verify the save by immediately reading back
         const savedMetadata = await window.electron.getFileMetadata(selectedFile);
         console.log('Verified saved metadata:', savedMetadata);
@@ -167,12 +167,12 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
 
     try {
       setIsGenerating(true);
-      
+
       const [apiSettings, metadataSettings] = await Promise.all([
         window.electron.getSettings('api'),
         window.electron.getSettings('metadata')
       ]);
-      
+
       if (!apiSettings?.apiKey || !apiSettings?.provider || !apiSettings?.model) {
         toast.error('Please configure API settings first');
         return;
@@ -199,16 +199,16 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
               description: result.metadata.description || '',
               keywords: result.metadata.keywords || []
             };
-            
+
             // Save the metadata and update state
             await window.electron.saveFileMetadata(selectedFile, metadata);
             setSelectedFileMetadata(metadata);
-            
+
             // Update UI state
             setTitle(metadata.title);
             setDescription(metadata.description);
             setKeywords(metadata.keywords);
-            
+
             // Notify parent if needed
             onMetadataChange?.(metadata);
           }
@@ -221,7 +221,7 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
           description: result[0].metadata.description || '',
           keywords: result[0].metadata.keywords || []
         };
-        
+
         // Save metadata directly here as well to ensure it's saved
         await window.electron.saveFileMetadata(selectedFile, validMetadata);
         setSelectedFileMetadata(validMetadata);
@@ -245,10 +245,10 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
             <span className="text-sm text-zinc-400 select-none">Title</span>
             <span className="text-sm text-zinc-500 select-none">{titleCharCount} characters</span>
           </div>
-          <Textarea 
+          <Textarea
             value={title}
             onChange={handleTitleChange}
-            className="w-full bg-background/5 border-zinc-800 text-white" 
+            className="w-full bg-background/5 border-zinc-800 text-white"
           />
         </div>
 
@@ -257,10 +257,10 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
             <span className="text-sm text-zinc-400 select-none">Description</span>
             <span className="text-sm text-zinc-500 select-none">{descriptionCharCount} characters</span>
           </div>
-          <Textarea 
+          <Textarea
             value={description}
             onChange={handleDescriptionChange}
-            className="w-full min-h-[100px] bg-background/5 border-zinc-800 text-white" 
+            className="w-full min-h-[100px] bg-background/5 border-zinc-800 text-white"
           />
         </div>
 
@@ -318,7 +318,7 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
           </div>
         </div>
         <div>
-          <Button 
+          <Button
             onClick={handleGenerate}
             disabled={isGenerating || !selectedFile}
           >
@@ -331,6 +331,7 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
 };
 
 export default MetadataInput;
+
 
 
 
