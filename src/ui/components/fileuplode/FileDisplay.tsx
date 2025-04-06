@@ -117,7 +117,6 @@ function FileDisplay() {
                 {thumbnails.length > 0 ? (
                     thumbnails.map((item, index) => {
                         const hasValidMetadata = processedFiles.has(item.path);
-                        console.log(`File ${item.path} has valid metadata: ${hasValidMetadata}`); // Debug log
                         
                         return (
                             <div

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+
 import { toast } from "sonner";
 
 // Default values
@@ -113,103 +113,87 @@ function MatadataSettings() {
   };
 
   return (
-    <div className="p-4 overflow-hidden border-t border-zinc-700/50 ">
-        <div className="pb-2">
-          <Link to="/">
-            <Button>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                height="24px"
-                viewBox="0 -960 960 960"
-                width="24px"
-                fill="#e8eaed"
-              >
-                <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
-              </svg>
-            </Button>
-          </Link>
+    <div className="flex flex-col items-center gap-6 text-gray-400">
+      <h2 className="text-2xl font-bold text-gray-400">Metadata Settings</h2>
+      <div className="w-full max-w-md flex flex-col gap-4">
+        <div>
+          <div className="flex gap-3 p-2">
+            <h4>Title Limits</h4>
+            <span className="text-s">(In characters)</span>
+          </div>
+          <Input
+            className="border-background/20"
+            type="number"
+            value={settings.titleLimit}
+            onChange={(e) =>
+              setSettings({
+                ...settings,
+                titleLimit: parseInt(e.target.value),
+              })
+            }
+            min="5"
+            max="200"
+          />
         </div>
-      <div className="text-gray-400 w-screen h-screen p-4 flex flex-col gap-4 items-center">
-        <div className="w-100 gap-4 flex flex-col">
-          <div>
-            <div className="flex gap-3 p-2">
-              <h4>Title Limits</h4>
-              <span className="text-sm">(In characters)</span>
-            </div>
-            <Input
-              className="border-background/20"
-              type="number"
-              value={settings.titleLimit}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  titleLimit: parseInt(e.target.value),
-                })
-              }
-              min="5"
-              max="200"
-            />
+        <div>
+          <div className="flex gap-3 p-2">
+            <h4>Description Limits</h4>
+            <span className="text-s">(In characters)</span>
           </div>
-          <div>
-            <div className="flex gap-3 p-2">
-              <h4>Description Limits</h4>
-              <span className="text-sm">(In characters)</span>
-            </div>
+          <Input
+            className="border-background/20"
+            type="number"
+            value={settings.descriptionLimit}
+            onChange={(e) =>
+              setSettings({
+                ...settings,
+                descriptionLimit: parseInt(e.target.value),
+              })
+            }
+            min="5"
+            max="200"
+          />
+        </div>
+        <div>
+          <h4 className="p-2">Keyword Limits</h4>
+          <Input
+            className="border-background/20"
+            type="number"
+            value={settings.keywordLimit}
+            onChange={(e) =>
+              setSettings({
+                ...settings,
+                keywordLimit: parseInt(e.target.value),
+              })
+            }
+            min="5"
+            max="49"
+          />
+        </div>
+        <div className="flex w-full justify-between gap-4">
+          <Button className="flex-1 bg-gray-300 hover:bg-gray-900 hover:text-white text-black" onClick={handleSave}>
+            Save
+          </Button>
+          <Button className="flex-1 " onClick={handleReset}>
+            Reset
+          </Button>
+        </div>
+        <div className="flex flex-col gap-2">
+          <h4 className="p-2">Select Output Directory</h4>
+          <div className="flex gap-2">
             <Input
-              className="border-background/20"
-              type="number"
-              value={settings.descriptionLimit}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  descriptionLimit: parseInt(e.target.value),
-                })
-              }
-              min="5"
-              max="200"
+              className="border-background/20 flex-grow"
+              type="text"
+              value={selectedFilePath}
+              readOnly
+              placeholder="No directory selected"
             />
-          </div>
-          <div>
-            <h4 className="p-2">Keyword Limits</h4>
-            <Input
-              className="border-background/20"
-              type="number"
-              value={settings.keywordLimit}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  keywordLimit: parseInt(e.target.value),
-                })
-              }
-              min="5"
-              max="49"
-            />
-          </div>
-          <div className="flex w-100 justify-between">
-            <Button className="w-30" onClick={handleReset}>
-              Reset
+            <Button
+              className="w-30"
+              onClick={handleFileSelect}
+            >
+              Browse
             </Button>
-            <Button className="w-30" onClick={handleSave}>
-              Save
-            </Button>
-          </div>
-          <div className="flex flex-col gap-2">
-            <h4 className="p-2">Select Output Directory</h4>
-            <div className="flex gap-2">
-              <Input
-                className="border-background/20 flex-grow"
-                type="text"
-                value={selectedFilePath}
-                readOnly
-                placeholder="No directory selected"
-              />
-              <Button
-                className="w-30"
-                onClick={handleFileSelect}
-              >
-                Browse
-              </Button>
-            </div>
           </div>
         </div>
       </div>
