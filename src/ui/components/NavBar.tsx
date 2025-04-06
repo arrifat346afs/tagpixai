@@ -1,6 +1,6 @@
-import { Link, useLocation, } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import "./navbar.css";
-import applogo from "../../../TagpixAi3.png"
+import applogo from "../../../TagpixAi3.png";
 
 interface NavBarProps {
   showLeft: boolean;
@@ -15,14 +15,15 @@ const NavBar = ({
   toggleLeft,
   toggleRight,
 }: NavBarProps) => {
- 
   let location = useLocation();
   let currentPage = location.pathname;
 
   return (
     <div className="nav-bar flex justify-between items-center h-9">
       <div className="flex">
-        <div className="flex justify-center flex-row items-center p-1"><img src={applogo} alt="logo" className="h-8 w-9"/></div>
+        <div className="flex justify-center flex-row items-center p-1">
+          <img src={applogo} alt="logo" className="h-8 w-9" />
+        </div>
         <Link
           to={"/api-settings"}
           className={` ${
@@ -37,16 +38,16 @@ const NavBar = ({
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              height="30px"
+              height="24px"
               viewBox="0 -960 960 960"
-              width="30px"
-              fill="#e8eaed"
+              width="24px"
+              fill="#FFFFFF"
             >
-              <path d="M280-280q-83.33 0-141.67-58.28Q80-396.56 80-479.82q0-83.26 58.33-141.72Q196.67-680 280-680q61.69 0 112.62 34.46 50.92 34.46 71.74 90.72H880v149.64h-88.1V-280H648.41v-125.18H464.36q-20.82 56.26-71.74 90.72Q341.69-280 280-280Zm0-33.85q67.79 0 109.41-42.52 41.62-42.53 49.66-82.66H683.9v125.18h74.15v-125.18h88.1v-81.94H439.03q-8-40.13-49.62-82.66-41.62-42.52-109.41-42.52-69.04 0-117.6 48.53-48.55 48.53-48.55 117.54 0 69 48.55 117.62 48.56 48.61 117.6 48.61Zm0-120.82q18.67 0 32-13.33 13.33-13.33 13.33-32T312-512q-13.33-13.33-32-13.33T248-512q-13.33 13.33-13.33 32T248-448q13.33 13.33 32 13.33Zm0-45.33Z" />
+              <path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z" />
             </svg>
           </button>
         </Link>
-      </div> 
+      </div>
       <div className="flex items-center">
         {/* Toggle buttons directly in the NavBar */}
         <div className="flex gap-4">
@@ -153,7 +154,6 @@ const NavBar = ({
             viewBox="0 -960 960 960"
             width="16px"
             fill="#e8eaed"
-            
           >
             <path d="M200-440v-80h560v80H200Z" />
           </svg>
@@ -169,7 +169,6 @@ const NavBar = ({
             viewBox="0 -960 960 960"
             width="16px"
             fill="#e8eaed"
-            
           >
             <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0 0v-560 560Z" />
           </svg>
@@ -185,7 +184,6 @@ const NavBar = ({
             viewBox="0 -960 960 960"
             width="16px"
             fill="#e8eaed"
-            
           >
             <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
           </svg>

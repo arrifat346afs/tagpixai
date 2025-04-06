@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -30,7 +30,7 @@ const DEFAULT_SETTINGS: ApiSettings = {
 const ApiSettings = () => {
   const [settings, setSettings] = useState<ApiSettings>(DEFAULT_SETTINGS);
   const [activePage, setActivePage] = useState("api"); // 'api' or 'metadata'
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -81,13 +81,13 @@ const ApiSettings = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden text-gray-400 ">
+    <div className="flex h-screen overflow-hidden text-gray-400 border-t border-zinc-700/50">
       {/* Fixed-width Sidebar */}
       <div className="w-64 min-w-64 bg-black/20 border-r border-zinc-700/50">
         <nav className="flex flex-col h-full">
           <div className="p-4">
             <Link to="/">
-              <Button variant="ghost" className="w-full justify-start gap-2">
+              <Button variant="ghost" className=" justify-start gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   height="24"

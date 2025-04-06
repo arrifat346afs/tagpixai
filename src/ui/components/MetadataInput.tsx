@@ -63,6 +63,7 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
 
           if (metadata) {
             const normalizedMetadata = {
+              filePath: selectedFile,
               title: metadata.title || '',
               description: metadata.description || '',
               keywords: metadata.keywords || []
@@ -76,6 +77,7 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
           } else {
             // Clear metadata if none exists
             const emptyMetadata = {
+              filePath: selectedFile,
               title: '',
               description: '',
               keywords: []
@@ -100,7 +102,10 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
       try {
         console.log('Saving metadata:', newMetadata, 'for file:', selectedFile);
         await window.electron.saveFileMetadata(selectedFile, newMetadata);
-        setSelectedFileMetadata(newMetadata);
+        setSelectedFileMetadata({
+          filePath: selectedFile,
+          ...newMetadata
+        });
         onMetadataChange?.(newMetadata);
 
         // Verify the save by immediately reading back
@@ -195,6 +200,7 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
         async (result) => {
           if (result.success && result.metadata) {
             const metadata = {
+              filePath: selectedFile,
               title: result.metadata.title || '',
               description: result.metadata.description || '',
               keywords: result.metadata.keywords || []
@@ -217,6 +223,7 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
 
       if (result[0].success && result[0].metadata) {
         const validMetadata = {
+          filePath: selectedFile,
           title: result[0].metadata.title || '',
           description: result[0].metadata.description || '',
           keywords: result[0].metadata.keywords || []
@@ -331,6 +338,7 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
 };
 
 export default MetadataInput;
+
 
 
 

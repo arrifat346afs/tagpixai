@@ -27,6 +27,12 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "./TagpixAi.ico"
+      "icon": "build/TagpixAi3.ico"
+    },
+    "mac": {
+      "icon": "build/TagpixAi3.icns"
+    },
+    "linux": {
+      "icon": "build/TagpixAi3.png"
     }
 }

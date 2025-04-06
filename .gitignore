@@ -11,8 +11,12 @@ node_modules
 dist
 dist-react
 dist-electron
-build
 *.local
+
+# Keep build icons
+!build/icon.ico
+!build/icon.icns
+!build/icon.png
 
 # Editor directories and files
 .vscode/*
@@ -24,3 +28,4 @@ build
 *.njsproj
 *.sln
 *.sw?
+

@@ -1,6 +1,6 @@
 import { app, ipcMain, protocol, BrowserWindow, dialog } from 'electron';
 import path from 'path';
-import { fileURLToPath } from 'url';
+// import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 import { existsSync, mkdirSync, rmSync } from 'fs';
 import { isDev } from './util.js';
@@ -9,8 +9,8 @@ import Sharp from 'sharp';
 import Store from 'electron-store';
 
 // Get __dirname equivalent in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 // Initialize the store with a schema
 const store = new Store({
@@ -56,7 +56,7 @@ app.whenReady().then(() => {
     width: 1200,
     height: 800,
     autoHideMenuBar: true,
-    icon: path.join(__dirname, 'assets', 'TagPix AI.icns'),
+    icon: "TagpixAi3.png",
     frame: false,
     webPreferences: {
       preload: getPreloadPath(),
@@ -69,7 +69,7 @@ app.whenReady().then(() => {
   } else {
     // Ensure proper path resolution in production
     mainWindow.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'));
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
   }
 });
 
