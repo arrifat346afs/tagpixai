@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 // Default values
 const DEFAULT_SETTINGS = {
+  visualTheme: null,
   titleLimit: 150,
   descriptionLimit: 150,
   keywordLimit: 25,
@@ -68,6 +69,7 @@ function MatadataSettings() {
     try {
       // Ensure all values are numbers
       const settingsToSave = {
+        ...settings,
         titleLimit: Number(settings.titleLimit),
         descriptionLimit: Number(settings.descriptionLimit),
         keywordLimit: Number(settings.keywordLimit),

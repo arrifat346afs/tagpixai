@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import MatadataSettings from "./MatadataSettings";
 import { cn } from "@/lib/utils";
+import UserProfile from "./UserProfile";
 
 interface ApiSettings {
   provider: string;
@@ -101,7 +102,7 @@ const ApiSettings = () => {
               </Button>
             </Link>
           </div>
-          
+
           <div className="flex flex-col gap-1 p-2">
             <button
               className={cn(
@@ -125,6 +126,17 @@ const ApiSettings = () => {
               onClick={() => setActivePage("metadata")}
             >
               Metadata Settings
+            </button>
+            <button
+              className={cn(
+                "w-full px-4 py-2 text-left rounded-lg transition-colors",
+                activePage === "userprofile"
+                  ? "bg-gray-300 text-black"
+                  : "text-gray-400 hover:bg-gray-800"
+              )}
+              onClick={() => setActivePage("userprofile")}
+            >
+              User Profile
             </button>
           </div>
         </nav>
@@ -172,7 +184,9 @@ const ApiSettings = () => {
                     </>
                   ) : (
                     <>
-                      <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                      <SelectItem value="gpt-3.5-turbo">
+                        GPT-3.5 Turbo
+                      </SelectItem>
                       <SelectItem value="gpt-4">GPT-4</SelectItem>
                     </>
                   )}
@@ -220,16 +234,18 @@ const ApiSettings = () => {
               </div>
               <h4 className="text-center mt-4 text-sm text-gray-500">
                 Exciting updates coming soon!<br></br>
-                We're expanding our AI capabilities to include more providers and
-                features.<br></br>
+                We're expanding our AI capabilities to include more providers
+                and features.<br></br>
                 <span className="font-semibold text-orange-400">
                   Note: OpenAI is currently not supported.
                 </span>
               </h4>
             </div>
-          ) : (
+          ) : activePage === "metadata" ? (
             <MatadataSettings />
-          )}
+          ) : activePage === "userprofile" ? (
+            <UserProfile />
+          ) : null}
         </div>
       </div>
     </div>

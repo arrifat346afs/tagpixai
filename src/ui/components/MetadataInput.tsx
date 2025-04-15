@@ -8,6 +8,7 @@ import { AIAnalysisResult } from "@/api/ai-api";
 import { toast } from "sonner";
 import { batchProcessor } from "@/services/batch-processing/processor";
 import { FileContext } from "./FileContext";
+import './MatadetaInput.css'
 
 interface MetadataInputProps {
   onMetadataChange?: (metadata: AIAnalysisResult) => void;
@@ -245,8 +246,8 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex flex-col gap-4 w-full p-4 border-l border-zinc-700/50 overflow-y-auto h-full">
+    <div className=" h-full flex flex-col">
+      <div className="matadeta-input flex flex-col gap-4 w-full p-4 border-l border-zinc-700/50 overflow-y-auto h-full">
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
             <span className="text-sm text-zinc-400 select-none">Title</span>

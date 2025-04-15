@@ -1,4 +1,5 @@
 interface MetadataSettings {
+    visualTheme: any;
     titleLimit: number;
     descriptionLimit: number;
     keywordLimit: number;

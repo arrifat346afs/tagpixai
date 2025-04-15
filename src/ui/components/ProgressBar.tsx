@@ -53,15 +53,16 @@ const ProgressBar = ({ visible = false }: ProgressBarProps) => {
           style={{ width: `${progress}%` }}
         />
         {/* Status text */}
-        <div className="absolute inset-0 text-xs text-zinc-400 flex justify-between items-center p-2 select-none">
-          <span>
+        <div className="absolute inset-0 text-xs flex justify-between items-center p-2 select-none">
+          <span className={`${progress > 50 ? 'text-white' : 'text-zinc-700'} transition-colors duration-300`}>
             Processing: {(status?.completed ?? 0) + (status?.failed ?? 0)} of{" "}
             {status?.total} files
             {status?.failed &&
               status.failed > 0 &&
               ` (${status.failed} failed)`}
           </span>
-          <span className="text-zinc-400">{Math.round(progress)}%</span>
+          <span className={`${progress > 50 ? 'text-white' : 'text-zinc-700'} transition-colors duration-300`}>
+            {Math.round(progress)}%</span>
         </div>
       </div>
     </div>
