@@ -85,7 +85,7 @@ export class AIService {
         
         response = result.response.text();
       } else {
-        const mistral = this.model as MistralClient;
+        const mistral = this.model as ReturnType<typeof createMistral>;
         const result = await mistral.images.generate({
           model: settings.api.model,
           prompt: prompt,
