@@ -64,7 +64,7 @@ export class LangChainService {
     }
 
     console.log(`Sending image to AI model (${imageSizeInMB.toFixed(2)}MB)`);
-
+    // Prepare the prompt for the AI model
     const prompt = `Please analyze this image and generate:
         1. A title (maximum ${settings.metadata.titleLimit} characters)
         2. A description (maximum ${settings.metadata.descriptionLimit} characters)
@@ -74,7 +74,6 @@ export class LangChainService {
         Title: [Main Subject] [Descriptive Detail] [Engaging, Natural Hook that Highlights Beauty or Emotion]
         Description: [your description]
         Keywords: [comma-separated keywords]`;
-
     try {
       const imageContent: MessageContentImageUrl = {
         type: "image_url",
