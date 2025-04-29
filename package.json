@@ -1,7 +1,7 @@
 {
   "name": "tagpix-ai",
   "private": true,
-  "version": "5.0.5",
+  "version": "5.0.6",
   "type": "module",
   "main": "dist-electron/main.js",
   "description": " AI powered metadata generator",
@@ -57,7 +57,7 @@
     "@tailwindcss/vite": "^4.0.17",
     "@types/ffmpeg-static": "^3.0.3",
     "@types/fluent-ffmpeg": "^2.1.27",
-    "ai": "^4.3.9",
+    "ai": "^4.3.10",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
