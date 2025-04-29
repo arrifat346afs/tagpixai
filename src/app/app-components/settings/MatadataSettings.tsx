@@ -173,10 +173,10 @@ function MatadataSettings() {
           />
         </div>
         <div className="flex w-full justify-between gap-4">
-          <Button className="flex-1 bg-gray-300 hover:bg-gray-900 hover:text-white text-black" onClick={handleSave}>
+          <Button className="flex-1 text-black hover:bg-blue-800" onClick={handleSave}>
             Save
           </Button>
-          <Button className="flex-1 " onClick={handleReset}>
+          <Button className="flex-1 " variant="outline" onClick={handleReset}>
             Reset
           </Button>
         </div>
@@ -191,6 +191,7 @@ function MatadataSettings() {
               placeholder="No directory selected"
             />
             <Button
+            variant="outline"
               className="w-30"
               onClick={handleFileSelect}
             >

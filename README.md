@@ -53,11 +53,37 @@ The built applications will be available in the `dist` directory.
 
 ## Project Structure
 
+The project follows a modern React application structure:
+
 ```
-├── src/
-│   ├── electron/     # Electron main process code
-│   ├── ui/           # React application code
-│   └── types/        # TypeScript type definitions
+src/
+├── app/                    # App-specific components and logic
+│   ├── (routes)/           # Route groups using Next.js-inspired structure
+│   │   ├── api-settings/   # API settings page
+│   │   ├── metadata-settings/ # Metadata settings page
+│   │   └── (home)/         # Home page (default route)
+│   ├── layout.tsx          # Root layout component
+│   └── providers.tsx       # All context providers
+├── components/             # Reusable components
+│   ├── ui/                 # UI components (buttons, inputs, etc.)
+│   └── settings/           # Settings-related components
+├── context/                # React context providers
+├── electron/               # Electron main process code
+│   ├── main.ts             # Main process entry
+│   ├── preload.ts          # Preload script
+│   └── util.ts             # Electron utilities
+├── hooks/                  # Custom React hooks
+├── lib/                    # Utility functions and libraries
+├── services/               # Service layer for API calls, etc.
+│   └── api/                # API services
+├── styles/                 # Global styles
+├── types/                  # TypeScript type definitions
+└── main.tsx                # React entry point
+```
+
+### Build Output
+
+```
 ├── dist-electron/    # Compiled Electron code
 ├── dist-react/       # Compiled React code
 └── public/           # Static assets
@@ -77,7 +103,12 @@ The built applications will be available in the `dist` directory.
 
 ## Features
 
-- Image metadata generation using AI
+- AI-powered metadata generation for images
+- Batch processing of multiple images
+- Customizable metadata settings
+- Support for multiple AI providers
+- Export metadata to various formats
+- User-friendly interface with dark mode
 - Local file system integration
 - Custom thumbnail generation
 - Metadata persistence

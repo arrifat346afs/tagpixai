@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 
 import { BatchProcessingStatus } from "@/services/batch-processing/types";
 import { batchProcessor } from "@/services/batch-processing/processor";
+import { Progress } from "@/components/ui/progress";
 
 interface ProgressBarProps {
   visible?: boolean;
@@ -10,11 +11,13 @@ interface ProgressBarProps {
 const ProgressBar = ({ visible = false }: ProgressBarProps) => {
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<BatchProcessingStatus | null>(null);
-
   useEffect(() => {
-    batchProcessor.reset();
+    // Only cleanup on unmount if a process is in progress
     return () => {
-      batchProcessor.reset();
+      const currentStatus = batchProcessor.getStatus();
+      if (currentStatus.inProgress) {
+        batchProcessor.reset();
+      }
     };
   }, []);
 
@@ -44,26 +47,23 @@ const ProgressBar = ({ visible = false }: ProgressBarProps) => {
   if (!visible) return null;
 
   return (
-    <div className="col-span-3 row-start-4 ">
+    <div className="col-span-3 row-start-4">
+      {/* Status text above progress bar */}
+      <div className="mb-2 text-xs flex justify-between items-center">
+        <span className="text-zinc-700 pl-1">
+          Processing: {(status?.completed ?? 0) + (status?.failed ?? 0)}/{" "}
+          {status?.total} files
+          {status?.completed && status.failed > 0 && ` (${status.failed} failed)`}
+        </span>
+        <span className="text-zinc-700 ">
+          {Math.round(progress)}%
+        </span>
+      </div>
       {/* Progress bar container */}
-      <div className="w-full h-4 rounded-md overflow-hidden relative">
+      <div className="w-full h-3 rounded-md overflow-hidden bg-transparent">
         {/* Progress bar fill */}
-        <div
-          className="h-4 bg-cyan-500 transition-all duration-300 ease-in-out"
-          style={{ width: `${progress}%` }}
-        />
-        {/* Status text */}
-        <div className="absolute inset-0 text-xs flex justify-between items-center p-2 select-none">
-          <span className={`${progress > 50 ? 'text-white' : 'text-zinc-700'} transition-colors duration-300`}>
-            Processing: {(status?.completed ?? 0) + (status?.failed ?? 0)} of{" "}
-            {status?.total} files
-            {status?.failed &&
-              status.failed > 0 &&
-              ` (${status.failed} failed)`}
-          </span>
-          <span className={`${progress > 50 ? 'text-white' : 'text-zinc-700'} transition-colors duration-300`}>
-            {Math.round(progress)}%</span>
-        </div>
+         <Progress value={progress} className="bg-transparent"/>
+
       </div>
     </div>
   );

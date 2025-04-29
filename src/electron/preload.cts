@@ -1,5 +1,17 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
+// Add event handlers for window state
+let maximizedCallback: (() => void) | null = null;
+let unmaximizedCallback: (() => void) | null = null;
+
+ipcRenderer.on('window-maximized', () => {
+  maximizedCallback?.();
+});
+
+ipcRenderer.on('window-unmaximized', () => {
+  unmaximizedCallback?.();
+});
+
 contextBridge.exposeInMainWorld("electron", {
   readFileBase64: (filePath: string) => ipcRenderer.invoke("read-file-base64", filePath),
   openFileDialog: () => ipcRenderer.invoke("open-file-dialog"),
@@ -21,6 +33,7 @@ contextBridge.exposeInMainWorld("electron", {
       throw error;
     }
   },
+
   saveFileMetadata: async (filePath: string, metadata: any) => {
     try {
       const result = await ipcRenderer.invoke(
@@ -40,13 +53,22 @@ contextBridge.exposeInMainWorld("electron", {
   minimize: () => ipcRenderer.send("minimize-window"),
   maximize: () => ipcRenderer.send("maximize-window"),
   close: () => ipcRenderer.send("close-window"),
+  isFullScreen: () => ipcRenderer.invoke("is-fullscreen"),
+  isFocused: () => ipcRenderer.invoke("is-focused"),
+  isMaximized: () => ipcRenderer.invoke("is-maximized"),
   saveCsvFile: (filePath: string, content: string) =>
     ipcRenderer.invoke("save-csv-file", filePath, content),
-  getTempCategories: (filePath: string) => 
+  getTempCategories: (filePath: string) =>
     ipcRenderer.invoke('get-temp-categories', filePath),
   saveTempCategories: (filePath: string, categories: {
     adobe: string;
     shutter1: string;
     shutter2: string;
   }) => ipcRenderer.invoke('save-temp-categories', filePath, categories),
+  onMaximized: (callback: () => void) => {
+    maximizedCallback = callback;
+  },
+  onUnmaximized: (callback: () => void) => {
+    unmaximizedCallback = callback;
+  },
 });

@@ -1,82 +1,116 @@
 import { ChatMistralAI } from "@langchain/mistralai";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { HumanMessage, MessageContentImageUrl } from "@langchain/core/messages";
 import type { ProcessingSettings } from "@/services/batch-processing/types";
 import type { AIAnalysisResult } from "./index";
 
 export class LangChainService {
-    private model: ChatMistralAI;
+  private model: ChatMistralAI | ChatGoogleGenerativeAI;
 
-    constructor(settings: ProcessingSettings) {
-        this.model = new ChatMistralAI({
-            apiKey: settings.api.apiKey,
-            modelName: settings.api.model
-        });
+  constructor(settings: ProcessingSettings) {
+    if (settings.api.provider === "Google") {
+      this.model = new ChatGoogleGenerativeAI({
+        apiKey: settings.api.apiKey,
+        model: settings.api.model,
+        maxOutputTokens: 2048,
+      });
+    } else {
+      this.model = new ChatMistralAI({
+        apiKey: settings.api.apiKey,
+        modelName: settings.api.model,
+      });
+    }
+  }
+
+  private parseAIResponse(response: string): AIAnalysisResult {
+    const lines = response.split("\n");
+    let title = "";
+    let description = "";
+    let keywords: string[] = [];
+
+    for (const line of lines) {
+      if (line.startsWith("1.") || line.toLowerCase().includes("title:")) {
+        title = line.replace(/^1\.\s*|title:\s*/i, "").trim();
+      } else if (
+        line.startsWith("2.") ||
+        line.toLowerCase().includes("description:")
+      ) {
+        description = line.replace(/^2\.\s*|description:\s*/i, "").trim();
+      } else if (
+        line.startsWith("3.") ||
+        line.toLowerCase().includes("keywords:")
+      ) {
+        const keywordText = line.replace(/^3\.\s*|keywords:\s*/i, "").trim();
+        keywords = keywordText
+          .split(",")
+          .map((k) => k.trim())
+          .filter((k) => k.length > 0);
+      }
     }
 
-    private parseAIResponse(response: string): AIAnalysisResult {
-        const lines = response.split('\n');
-        let title = '';
-        let description = '';
-        let keywords: string[] = [];
+    return { title, description, keywords };
+  }
 
-        for (const line of lines) {
-            if (line.startsWith('1.') || line.toLowerCase().includes('title:')) {
-                title = line.replace(/^1\.\s*|title:\s*/i, '').trim();
-            } else if (line.startsWith('2.') || line.toLowerCase().includes('description:')) {
-                description = line.replace(/^2\.\s*|description:\s*/i, '').trim();
-            } else if (line.startsWith('3.') || line.toLowerCase().includes('keywords:')) {
-                const keywordText = line.replace(/^3\.\s*|keywords:\s*/i, '').trim();
-                keywords = keywordText.split(',').map(k => k.trim()).filter(k => k.length > 0);
-            }
-        }
-
-        return { title, description, keywords };
+  async analyzeImage(
+    imageBase64: string,
+    settings: ProcessingSettings
+  ): Promise<AIAnalysisResult> {
+    // Check base64 image size (Groq limit is 4MB for base64)
+    const imageSizeInMB = (imageBase64.length * 3) / 4 / (1024 * 1024);
+    if (imageSizeInMB > 4) {
+      throw new Error(
+        "Base64 image exceeds Groq's 4MB limit. Please use a smaller image."
+      );
     }
 
-    async analyzeImage(
-        imageBase64: string,
-        settings: ProcessingSettings
-    ): Promise<AIAnalysisResult> {
-        const imageSizeInMB = (imageBase64.length * 3/4) / (1024 * 1024);
+    console.log(`Sending image to AI model (${imageSizeInMB.toFixed(2)}MB)`);
 
-        if (imageSizeInMB > 4) {
-            throw new Error('Image file is too large. The image should be automatically resized to 225px, but it may be too complex for AI processing.');
-        }
-
-        console.log(`Sending image to AI model (${imageSizeInMB.toFixed(2)}MB)`);
-
-        const prompt = `Please analyze this image and generate:
+    const prompt = `Please analyze this image and generate:
         1. A title (maximum ${settings.metadata.titleLimit} characters)
         2. A description (maximum ${settings.metadata.descriptionLimit} characters)
         3. Up to ${settings.metadata.keywordLimit} relevant keywords
 
         Please format the response exactly as:
-        Title: [Main Subject] + [Descriptive Detail] – [Engaging, Natural Hook that Highlights Beauty or Emotion]
+        Title: [Main Subject] [Descriptive Detail] [Engaging, Natural Hook that Highlights Beauty or Emotion]
         Description: [your description]
         Keywords: [comma-separated keywords]`;
 
-        try {
-            const imageContent: MessageContentImageUrl = {
-                type: "image_url",
-                image_url: `data:image/jpeg;base64,${imageBase64}`
-            };
+    try {
+      const imageContent: MessageContentImageUrl = {
+        type: "image_url",
+        image_url: `data:image/jpeg;base64,${imageBase64}`,
+      };
 
-            const response = await this.model.invoke([
-                new HumanMessage({
-                    content: [
-                        { type: "text", text: prompt },
-                        imageContent
-                    ]
-                })
-            ]);
+      const response = await this.model.invoke([
+        new HumanMessage({
+          content: [{ type: "text", text: prompt }, imageContent],
+        }),
+      ]);
 
-            const text = Array.isArray(response.content)
-                ? response.content.map(c => c.type === 'text' ? c.text : '').join(' ')
-                : String(response.content);
-            return this.parseAIResponse(text);
-        } catch (error) {
-            console.error('LangChain AI error:', error);
-            throw new Error(`AI API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
+      if (!response || !response.content) {
+        throw new Error('Empty response from Groq API');
+      }
+
+      const text = Array.isArray(response.content)
+        ? response.content.map(c => c.type === 'text' ? c.text : '').join(' ')
+        : String(response.content);
+
+      if (!text.trim()) {
+        throw new Error('Empty text response from Groq API');
+      }
+
+      const result = this.parseAIResponse(text);
+      
+      // Validate the result
+      if (!result.title || !result.description || !result.keywords.length) {
+        throw new Error('Incomplete metadata generated by Groq API');
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Groq API error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Groq API error: ${errorMessage}`);
     }
+  }
 }

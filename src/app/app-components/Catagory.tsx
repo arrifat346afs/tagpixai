@@ -203,39 +203,17 @@ const Category = () => {
   }, [selectedFileMetadata]);
 
   // Debug function to check current categories
-  const debugCategories = async () => {
-    try {
-      console.log('DEBUG CATEGORY: Current state values:');
-      console.log('- adobeStock:', adobeStock);
-      console.log('- shutterStock1:', shutterStock1);
-      console.log('- shutterStock2:', shutterStock2);
-      console.log('- selectedFileMetadata:', selectedFileMetadata);
 
-      if (selectedFileMetadata?.filePath) {
-        const savedCategories = await window.electron.getTempCategories(selectedFileMetadata.filePath);
-        console.log('DEBUG CATEGORY: Saved categories for current file:', savedCategories);
-      } else {
-        console.log('DEBUG CATEGORY: No file selected');
-      }
-    } catch (error) {
-      console.error('Debug error:', error);
-    }
-  };
 
   return (
-    <div className="flex flex-col gap-4 h-full justify-center items-center text-white border-r border-zinc-700/50">
+    <div className="flex flex-col gap-4 h-full justify-center items-center border-r border-zinc-700/50">
       <div className="w-full flex flex-col gap-2 items-center p-3">
-        <button
-          onClick={debugCategories}
-          className="text-xs text-gray-500 hover:text-gray-300 mb-1"
-        >
-          Debug Categories
-        </button>
-        <Select value={adobeStock} onValueChange={setAdobeStock}>
-          <SelectTrigger className="w-full border-background/20 border-1 text-center">
+
+        <Select  value={adobeStock} onValueChange={setAdobeStock} >
+          <SelectTrigger className="w-full border-background/20 border-1 text-center bg-transparent">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-[#191818] text-gray-300">
+          <SelectContent>
             <SelectItem value="1">Animals</SelectItem>
             <SelectItem value="2">Buildings</SelectItem>
             <SelectItem value="3">Business</SelectItem>
@@ -266,7 +244,7 @@ const Category = () => {
             <SelectTrigger className="w-full border-background/20 border-1 text-center">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-[#191818] text-gray-300">
+            <SelectContent >
               <SelectItem value="Abstract">Abstract</SelectItem>
               <SelectItem value="Animals/Wildlife">Animals/Wildlife</SelectItem>
               <SelectItem value="Arts">Arts</SelectItem>
@@ -309,7 +287,7 @@ const Category = () => {
             <SelectTrigger className="w-full border-background/20 border-1 text-center">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-[#191818] text-gray-300">
+            <SelectContent >
               <SelectItem value="Abstract">Abstract</SelectItem>
               <SelectItem value="Animals/Wildlife">Animals/Wildlife</SelectItem>
               <SelectItem value="Arts">Arts</SelectItem>

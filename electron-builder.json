@@ -25,9 +25,22 @@
         {
           "target": "portable",
           "arch": ["x64"]
+        },
+        {
+          "target": "nsis",
+          "arch": ["x64"]
         }
       ],
       "icon": "build/TagpixAi3.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "TagPix AI",
+      "uninstallDisplayName": "TagPix AI",
+      "deleteAppDataOnUninstall": true
     },
     "mac": {
       "icon": "build/TagpixAi3.icns"

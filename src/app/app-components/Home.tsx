@@ -1,18 +1,17 @@
 import { Routes, Route } from "react-router-dom";
 import { useState } from "react";
-import ActionButton from "./components/ActionButton";
-import Catagory from "./components/Catagory";
-import FileDisplay from "./components/fileuplode/FileDisplay";
-import FilePreview from "./components/FilePreview";
-import MetadataInput from "./components/MetadataInput";
-import NavBar from "./components/NavBar";
-import ProgressBar from "./components/ProgressBar";
-import ApiSettings from "./components/settings/ApiSettings";
-import MatadataSettings from "./components/settings/MatadataSettings";
+import Category from "./Catagory";
 import { Toaster } from "sonner";
+import NavBar from "./NavBar";
+import ApiSettings from "./settings/ApiSettings";
+import MatadataSettings from "./settings/MatadataSettings";
+import FilePreview from "./FilePreview";
+import MetadataInput from "./MetadataInput";
+import ActionButton from "./ActionButton";
+import FileDisplay from "./fileuplode/FileDisplay";
+import ProgressBar from "./ProgressBar";
 
-function App() {
-  // State for panel visibility
+const Home = () => {
   const [showLeft, setShowLeft] = useState(true);
   const [showRight, setShowRight] = useState(true);
 
@@ -25,7 +24,7 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col w-full h-screen">
+    <div className="flex flex-col w-full h-screen ">
       <NavBar
         showLeft={showLeft}
         showRight={showRight}
@@ -48,7 +47,7 @@ function App() {
                     showLeft ? "w-[30%]" : "w-0"
                   }`}
                 >
-                  <Catagory />
+                  <Category />
                 </div>
 
                 {/* Middle panel - expands to fill available space */}
@@ -92,7 +91,6 @@ function App() {
       </Routes>
     </div>
   );
-}
+};
 
-export default App;
-
+export default Home;

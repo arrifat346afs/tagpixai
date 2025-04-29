@@ -10,7 +10,10 @@ const Export = () => {
   const { selectedFiles } = useContext(FileContext)
 
   const getFilenameFromPath = (filePath: string) => {
-    return filePath.split(/[\\/]/).pop() || ''
+    // Handle both forward and backward slashes and preserve the file extension
+    const normalizedPath = filePath.replace(/\\/g, '/');
+    const lastSlashIndex = normalizedPath.lastIndexOf('/');
+    return lastSlashIndex !== -1 ? normalizedPath.slice(lastSlashIndex + 1) : normalizedPath;
   }
 
   const generateCSV = async () => {
@@ -27,10 +30,17 @@ const Export = () => {
         return
       }
 
+      // Debug: Log file names for verification
+      console.log('Files to be exported:', selectedFiles.map(file => ({
+        original: file,
+        extracted: getFilenameFromPath(file)
+      })));
+
       // Debug: Log all temp categories to see what's available
       console.log('Exporting files, checking all temp categories first...');
 
       // Get all categories from the store
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const allCategories: Record<string, any> = {};
 
       for (const filePath of selectedFiles) {
@@ -59,6 +69,8 @@ const Export = () => {
         }
 
         const filename = getFilenameFromPath(filePath)
+        console.log(`Processing file: ${filePath} -> ${filename}`); // Debug log
+
         const { title, description, keywords } = metadata
 
         // Get temporary categories from the Electron store
@@ -162,22 +174,16 @@ const Export = () => {
   // };
 
   return (
-    <div className="text-white flex gap-4 justify-center items-center h-full my-2">
+    <div className=" flex gap-4 justify-center items-center h-full my-2">
       <div className="flex gap-2">
         <Button
-          className="bg-transparent"
+          className="bg-transparent text-white hover:bg-accent"
           onClick={generateCSV}
           disabled={selectedFiles.length === 0}
         >
           Export
+          
         </Button>
-        {/* <Button
-          className="bg-transparent"
-          onClick={debugCategories}
-          disabled={selectedFiles.length === 0}
-        >
-          Debug
-        </Button> */}
       </div>
       <Separator orientation="vertical" className="bg-zinc-700/50"/>
       <div className="w-full flex justify-center items-center p-3">
