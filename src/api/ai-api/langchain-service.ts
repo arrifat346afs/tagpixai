@@ -1,16 +1,16 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { MistralClient } from '@ai-sdk/mistral';
+import {createMistral } from '@ai-sdk/mistral';
 import type { ProcessingSettings } from "@/services/batch-processing/types";
 import type { AIAnalysisResult } from "./index";
 
 export class AIService {
-  private model: GoogleGenerativeAI | MistralClient;
+  private model: GoogleGenerativeAI | ReturnType<typeof createMistral>;
 
   constructor(settings: ProcessingSettings) {
     if (settings.api.provider === "Google") {
       this.model = new GoogleGenerativeAI(settings.api.apiKey);
     } else {
-      this.model = new MistralClient({
+      this.model = createMistral({
         apiKey: settings.api.apiKey
       });
     }
