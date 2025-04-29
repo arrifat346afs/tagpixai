@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@ai-sdk/google':
         specifier: ^1.2.14
-        version: 5.0.7
+        version: 5.0.8
       '@ai-sdk/mistral':
         specifier: ^1.2.7
         version: 1.2.7(zod@3.24.3)

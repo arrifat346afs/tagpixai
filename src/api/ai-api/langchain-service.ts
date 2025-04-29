@@ -65,6 +65,7 @@ export class LangChainService {
 
     console.log(`Sending image to AI model (${imageSizeInMB.toFixed(2)}MB)`);
     // Prepare the prompt for the AI model
+    // Note: Groq API has a limit of 4096 tokens for the entire request, including the image and prompt.
     const prompt = `Please analyze this image and generate:
         1. A title (maximum ${settings.metadata.titleLimit} characters)
         2. A description (maximum ${settings.metadata.descriptionLimit} characters)
