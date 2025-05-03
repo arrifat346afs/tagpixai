@@ -21,6 +21,7 @@ type SettingsValue<T extends SettingsKey> = T extends 'metadata'
     : never;
 
 interface ElectronAPI {
+    onWindowStateChange(arg0: (state: any) => void): unknown;
     minimize: () => void;
     maximize: () => void;
     close: () => void;

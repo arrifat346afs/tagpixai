@@ -1,25 +1,13 @@
-import { ChatMistralAI } from "@langchain/mistralai";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { HumanMessage, MessageContentImageUrl } from "@langchain/core/messages";
 import type { ProcessingSettings } from "@/services/batch-processing/types";
-import type { AIAnalysisResult } from "./index";
+import type { AIAnalysisResult } from "../../index";
 
-export class LangChainService {
-  private model: ChatMistralAI | ChatGoogleGenerativeAI;
+export class GroqService {
+  private apiKey: string;
+  private model: string;
 
   constructor(settings: ProcessingSettings) {
-    if (settings.api.provider === "Google") {
-      this.model = new ChatGoogleGenerativeAI({
-        apiKey: settings.api.apiKey,
-        model: settings.api.model,
-        maxOutputTokens: 2048,
-      });
-    } else {
-      this.model = new ChatMistralAI({
-        apiKey: settings.api.apiKey,
-        modelName: settings.api.model,
-      });
-    }
+    this.apiKey = settings.api.apiKey;
+    this.model = settings.api.model;
   }
 
   private parseAIResponse(response: string): AIAnalysisResult {
@@ -55,19 +43,19 @@ export class LangChainService {
     imageBase64: string,
     settings: ProcessingSettings
   ): Promise<AIAnalysisResult> {
-    // Check base64 image size (Groq limit is 4MB for base64)
+    // Check base64 image size
     const imageSizeInMB = (imageBase64.length * 3) / 4 / (1024 * 1024);
     if (imageSizeInMB > 4) {
       throw new Error(
-        "Base64 image exceeds Groq's 4MB limit. Please use a smaller image."
+        "Base64 image exceeds 4MB limit. Please use a smaller image."
       );
     }
 
-    console.log(`Sending image to AI model (${imageSizeInMB.toFixed(2)}MB)`);
-    // Prepare the prompt for the AI model
-    // Note: Groq API has a limit of 4096 tokens for the entire request, including the image and prompt.
+    console.log(`Sending image to Groq API (${imageSizeInMB.toFixed(2)}MB)`);
+
+    // Prepare the prompt for the Groq API
     const prompt = `Please analyze this image and generate:
-        1. A title (maximum ${settings.metadata.titleLimit} characters)
+        1. A title (exactly ${settings.metadata.titleLimit} characters)
         2. A description (maximum ${settings.metadata.descriptionLimit} characters)
         3. Up to ${settings.metadata.keywordLimit} relevant keywords
 
@@ -75,24 +63,47 @@ export class LangChainService {
         Title: [Main Subject] [Descriptive Detail] [Engaging, Natural Hook that Highlights Beauty or Emotion]
         Description: [your description]
         Keywords: [comma-separated keywords]`;
-    try {
-      const imageContent: MessageContentImageUrl = {
-        type: "image_url",
-        image_url: `data:image/jpeg;base64,${imageBase64}`,
-      };
 
-      const response = await this.model.invoke([
-        new HumanMessage({
-          content: [{ type: "text", text: prompt }, imageContent],
-        }),
-      ]);
-    if (!response || !response.content) {
+    try {
+      // Direct API call to Groq
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${this.apiKey}`
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: prompt },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: `data:image/jpeg;base64,${imageBase64}`
+                  }
+                }
+              ]
+            }
+          ],
+          max_tokens: 1024
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Groq API error: ${errorData.error?.message || response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
         throw new Error('Empty response from Groq API');
       }
 
-      const text = Array.isArray(response.content)
-        ? response.content.map(c => c.type === 'text' ? c.text : '').join(' ')
-        : String(response.content);
+      const text = data.choices[0].message.content;
 
       if (!text.trim()) {
         throw new Error('Empty text response from Groq API');
@@ -107,9 +118,9 @@ export class LangChainService {
 
       return result;
     } catch (error) {
-      console.error('Groq API error:', error);
+      console.error(error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`Groq API error: ${errorMessage}`);
+      throw new Error(`${errorMessage}`);
     }
   }
 }

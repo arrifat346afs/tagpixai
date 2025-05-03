@@ -56,6 +56,9 @@ contextBridge.exposeInMainWorld("electron", {
   isFullScreen: () => ipcRenderer.invoke("is-fullscreen"),
   isFocused: () => ipcRenderer.invoke("is-focused"),
   isMaximized: () => ipcRenderer.invoke("is-maximized"),
+  onWindowStateChange: (callback: (arg0: any) => any) => {
+    ipcRenderer.on("window-state-changed", (_event: any, state: any) => callback(state));
+  },
   saveCsvFile: (filePath: string, content: string) =>
     ipcRenderer.invoke("save-csv-file", filePath, content),
   getTempCategories: (filePath: string) =>

@@ -40,7 +40,7 @@ const Home = () => {
           element={
             <div className="h-full flex flex-col border-t border-zinc-700/50 overflow-hidden">
               {/* Main content area with flex layout - add h-[72%] to maintain fixed height */}
-              <div className="flex h-[70%]">
+              <div className="flex h-[68%]">
                 {/* Left panel */}
                 <div
                   className={`transition-all duration-500 overflow-hidden ${
@@ -82,7 +82,8 @@ const Home = () => {
               <div className="h-[20%] flex-shrink-0">
                 <FileDisplay />
               </div>
-              <div className="h-[4%] flex-shrink-0">
+              <div className="h-[7%] flex-shrink-0">
+                {/* Progress bar container */}
                 <ProgressBar visible={true} />
               </div>
             </div>

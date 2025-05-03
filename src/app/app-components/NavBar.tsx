@@ -20,6 +20,7 @@ interface NavBarProps {
   showRight: boolean;
   toggleLeft: () => void;
   toggleRight: () => void;
+  
 }
 
 const NavBar = ({
@@ -82,10 +83,10 @@ const NavBar = ({
   const hoverBg = isFocused ? "hover:bg-zinc-500/30" : "hover:bg-zinc-600/20";
 
   return (
-    <div className="nav-bar flex justify-between items-center h-9">
+    <div className="nav-bar flex justify-between items-center h-8">
       <div className="flex">
-        <div className="flex justify-center flex-row items-center p-1">
-          <img src={applogo} alt="logo" className="h-8 w-9" />
+        <div className="flex justify-center flex-row items-center p-1 pr-3">
+          <img src={applogo} alt="logo" className="h-7 w-7" />
         </div>
         <Link
           to={"/api-settings"}
@@ -109,7 +110,7 @@ const NavBar = ({
           />
         </Link>
       </div>
-      <div className="flex items-center">
+      <div className="flex items-center h-full">
         {/* Toggle buttons directly in the NavBar */}
         <div className="flex gap-4 p-2 w-auto">
           <button
@@ -127,7 +128,7 @@ const NavBar = ({
           </button>
         </div>
         <button
-          className={`flex justify-center items-center w-12 h-9 ${hoverBg}`}
+          className={`flex justify-center items-center w-12 h-full ${hoverBg}`}
           id="minimize"
           onClick={() => window.electron.minimize()}
         >
@@ -136,7 +137,7 @@ const NavBar = ({
           </span>
         </button>
         <button
-          className={`flex justify-center items-center w-12 h-9 ${hoverBg}`}
+          className={`flex justify-center items-center w-12 h-full ${hoverBg}`}
           id="maximize"
           onClick={handleMaximizeClick}
         >
@@ -145,7 +146,7 @@ const NavBar = ({
           </span>
         </button>
         <button
-          className="flex justify-center items-center w-12 h-9 hover:bg-red-600"
+          className={`flex justify-center items-center w-12 h-full hover:bg-red-600`}
           id="close"
           onClick={() => window.electron.close()}
         >

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Button } from "@/components/ui/button";
-import { AIAnalysisResult } from "@/api/ai-api";
+import { AIAnalysisResult } from "@/api/ai";
 import { toast } from "sonner";
 import { batchProcessor } from "@/services/batch-processing/processor";
 import { FileContext } from "./FileContext";

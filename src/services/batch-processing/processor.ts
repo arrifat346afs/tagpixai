@@ -1,5 +1,6 @@
 import { ProcessingResult, BatchProcessingStatus, ProcessingSettings} from './types';
-import { analyzeImage } from '@/api/ai-api';
+// import { analyzeImage } from '../../api/ai-api/types'; // Adjust the import path as necessary
+import { analyzeImage } from '@/api/ai'
 
 class BatchProcessor {
   private subscribers: ((status: BatchProcessingStatus) => void)[] = [];

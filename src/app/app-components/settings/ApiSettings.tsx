@@ -23,7 +23,7 @@ interface ApiSettings {
 }
 
 const DEFAULT_SETTINGS: ApiSettings = {
-  provider: "MistralAI", // Changed default from OpenAI to MistralAI
+  provider: "MistralAI", 
   model: "",
   apiKey: "",
   requestInterval: 1,
@@ -82,35 +82,35 @@ const ApiSettings = () => {
 
   return (
     <div className="flex h-screen overflow-hidden border-t border-zinc-700/50">
-
-
       <div className="flex flex-col w-full h-full pt-1">
-          <Link to="/">
-            <Button variant="ghost" className="justify-start gap-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                height="24"
-                viewBox="0 -960 960 960"
-                width="24"
-                fill="currentColor"
-              >
-                <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
-              </svg>
-              Back
-            </Button>
-          </Link>
+        <Link to="/">
+          <Button variant="ghost" className="justify-start gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              height="24"
+              viewBox="0 -960 960 960"
+              width="24"
+              fill="currentColor"
+            >
+              <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
+            </svg>
+            Back
+          </Button>
+        </Link>
         <div className="h-full p-6">
           <Tabs defaultValue="api" className="w-full">
             <TabsList className="grid h-11 w-full grid-cols-3 border bg-background/50">
               <TabsTrigger value="api">API Settings</TabsTrigger>
-              <TabsTrigger value="metadata" >Metadata Settings</TabsTrigger>
+              <TabsTrigger value="metadata">Metadata Settings</TabsTrigger>
               <TabsTrigger value="userprofile">User Profile</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="api" className="mt-6">
               <div className="flex flex-col items-center gap-6">
-                <h2 className="text-2xl font-bold text-gray-400">API Settings</h2>
-                
+                <h2 className="text-2xl font-bold text-gray-400">
+                  API Settings
+                </h2>
+
                 {/* Provider Selection - Removed OpenAI */}
                 <Select
                   value={settings.provider}
@@ -120,10 +120,11 @@ const ApiSettings = () => {
                 >
                   <SelectTrigger className="w-80 border-background/20">
                     <SelectValue placeholder="Select Provider" />
-                  </SelectTrigger>
+                  </SelectTrigger>{" "}
                   <SelectContent className="bg-black text-gray-400 border-background/20">
                     <SelectItem value="MistralAI">Mistral AI</SelectItem>
                     <SelectItem value="Google">Google</SelectItem>
+                    <SelectItem value="Groq">Groq</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -147,7 +148,7 @@ const ApiSettings = () => {
                           Pixtral Large
                         </SelectItem>
                       </>
-                    )}
+                    )}{" "}
                     {settings.provider === "Google" && (
                       <>
                         <SelectItem value="gemini-2.0-flash-lite">
@@ -156,6 +157,17 @@ const ApiSettings = () => {
                         <SelectItem value="gemini-2.0-flash">
                           Gemini 2.0 Flash
                         </SelectItem>
+                      </>
+                    )}
+                    {settings.provider === "Groq" && (
+                      <>
+                        <SelectItem value="meta-llama/llama-4-scout-17b-16e-instruct">
+                          Llama 4 Scout
+                        </SelectItem>
+                        <SelectItem value="meta-llama/llama-4-maverick-17b-128e-instruct">
+                          Llama 4 Maverick
+                        </SelectItem>
+
                       </>
                     )}
                   </SelectContent>
@@ -210,7 +222,8 @@ const ApiSettings = () => {
                 {/* Info Text */}
                 <h4 className="text-center mt-4 text-sm text-gray-500">
                   <span className="font-semibold text-orange-400">
-                    Note: OpenAI is currently not supported. Because it's a closedAI.
+                    Note: OpenAI is currently not supported. Because it's a
+                    closedAI.
                   </span>
                 </h4>
               </div>

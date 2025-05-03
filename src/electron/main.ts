@@ -6,9 +6,31 @@ import fs from "fs/promises";
 import { existsSync, mkdirSync, rmSync } from "fs";
 import { isDev } from "./util.js";
 import { getPreloadPath } from "./pathResolver.js";
-import Sharp from "sharp";
 import Store from "electron-store";
-import ffmpeg_ from "fluent-ffmpeg";
+
+// Define module cache variables
+let sharpModule: typeof import("sharp") | null = null;
+let ffmpegModule: typeof import("fluent-ffmpeg") | null = null;
+
+// Function to dynamically load Sharp module
+async function loadSharp() {
+  if (!sharpModule) {
+    console.log("Dynamically loading Sharp module");
+    const module = await import("sharp");
+    sharpModule = module.default;
+  }
+  return sharpModule;
+}
+
+// Function to dynamically load ffmpeg module
+async function loadFfmpeg() {
+  if (!ffmpegModule) {
+    console.log("Dynamically loading ffmpeg module");
+    const module = await import("fluent-ffmpeg");
+    ffmpegModule = module.default;
+  }
+  return ffmpegModule;
+}
 
 // Get __dirname equivalent in ES modules
 // const __filename = fileURLToPath(import.meta.url);
@@ -117,17 +139,8 @@ app.whenReady().then(() => {
   if (isDev()) {
     mainWindow.loadURL("http://localhost:5000");
   } else {
-    // Ensure proper path resolution in production
     mainWindow.loadFile(path.join(app.getAppPath(), "/dist-react/index.html"));
-    // Disable devtools and prevent refresh
-    mainWindow.webContents.on("devtools-opened", () => {
-      mainWindow.webContents.closeDevTools();
-    });
-    mainWindow.webContents.on("before-input-event", (event, input) => {
-      if (input.key === "F5" || (input.key === "r" && input.control)) {
-        event.preventDefault();
-      }
-    });
+    
   }
 });
 
@@ -195,8 +208,11 @@ async function generateThumbnail(
     if (isVideo) {
       try {
         if (!existsSync(thumbnailPath)) {
+          // Dynamically load ffmpeg
+          const ffmpeg = await loadFfmpeg();
+
           await new Promise<void>((resolve, reject) => {
-            ffmpeg_(filePath)
+            ffmpeg(filePath)
               .takeScreenshots({
                 timestamps: ["00:00:01"],
                 filename: thumbnailName,
@@ -232,6 +248,9 @@ async function generateThumbnail(
     // Handle images
     try {
       if (!existsSync(thumbnailPath)) {
+        // Dynamically load Sharp
+        const Sharp = await loadSharp();
+
         await Sharp(filePath)
           .resize(undefined, 256, {
             fit: "inside",
@@ -338,6 +357,9 @@ async function resizeImageForAI(filePath: string): Promise<string> {
 
   // Handle images
   try {
+    // Dynamically load Sharp
+    const Sharp = await loadSharp();
+
     const metadata = await Sharp(filePath).metadata();
     console.log(
       `Processing image: ${path.basename(filePath)} (${metadata.width}x${

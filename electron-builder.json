@@ -4,7 +4,22 @@
     "files": [
       "dist-electron/**/*",
       "dist-react/**/*",
-      "package.json"
+      "package.json",
+      "node_modules/**/*",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin",
+      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+      "!.editorconfig",
+      "!**/._*",
+      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+      "!**/locales/*.pak",
+      "!**/chrome_*.pak",
+      "!**/{LICENSE.*,license.*,License.*}",
+      "!**/{LICENSES.*,licenses.*,Licenses.*}",
+      "!**/default_app.asar"
     ],
     "directories": {
       "output": "dist",
@@ -14,18 +29,18 @@
       {
         "from": "dist-electron/preload.cjs",
         "to": "preload.cjs"
-      },
-      {
-        "from": "src/assets",
-        "to": "assets"
       }
     ],
+    "asar": {
+      "smartUnpack": true
+    },
+    "asarUnpack": [
+      "node_modules/@img/sharp-win32-x64/**/*",
+      "node_modules/ffmpeg-static/**/*"
+    ],
+    "electronLanguages": ["en-US"],
     "win": {
       "target": [
-        {
-          "target": "portable",
-          "arch": ["x64"]
-        },
         {
           "target": "nsis",
           "arch": ["x64"]
@@ -40,12 +55,18 @@
       "createStartMenuShortcut": true,
       "shortcutName": "TagPix AI",
       "uninstallDisplayName": "TagPix AI",
-      "deleteAppDataOnUninstall": true
+      "deleteAppDataOnUninstall": true,
+      "differentialPackage": true
     },
     "mac": {
       "icon": "build/TagpixAi3.icns"
     },
     "linux": {
       "icon": "build/TagpixAi3.png"
-    }
+    },
+    "buildDependenciesFromSource": false,
+    "nodeGypRebuild": false,
+    "removePackageScripts": true,
+    "removePackageKeywords": true,
+    "npmRebuild": false
 }

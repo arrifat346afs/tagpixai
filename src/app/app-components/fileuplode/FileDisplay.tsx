@@ -239,7 +239,7 @@ function FileDisplay() {
   };
 
   return (
-    <ScrollArea className=" p-4 flex flex-col justify-center select-none">
+    <ScrollArea className=" p-4 h-full flex flex-col justify-center select-none">
       <div
         ref={scrollContainerRef}
         className="flex flex-row gap-2"
