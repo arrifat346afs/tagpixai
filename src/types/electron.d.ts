@@ -11,9 +11,10 @@ interface ApiSettings {
   model: string;
   apiKey: string;
   requestInterval: number;
+  includePlaceName: boolean;
 }
 
-type SettingsKey = 'metadata' | 'api' | 'outputDirectory';
+type SettingsKey = "metadata" | "api" | "outputDirectory";
 
 declare global {
   interface Window {
@@ -55,4 +56,3 @@ declare global {
 }
 
 export {};
-

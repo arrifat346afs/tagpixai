@@ -8,6 +8,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import TitleField from "./metadata-fields/TitleField";
 import DescriptionField from "./metadata-fields/DescriptionField";
 import KeywordsField from "./metadata-fields/KeywordsField";
+import "./css/MetadataInput.css"; // Import the CSS for animations
 
 interface MetadataInputProps {
   onMetadataChange?: (metadata: AIAnalysisResult) => void;
@@ -36,8 +37,8 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
     console.log("Current selectedFileMetadata:", selectedFileMetadata);
 
     if (selectedFileMetadata) {
-      const isIncomplete = !selectedFileMetadata.title || 
-                          !selectedFileMetadata.description || 
+      const isIncomplete = !selectedFileMetadata.title ||
+                          !selectedFileMetadata.description ||
                           !selectedFileMetadata.keywords?.length;
 
       if (isIncomplete) {
@@ -263,28 +264,34 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
   };
   return (
     <ScrollArea className="h-full w-full border-l border-zinc-700/50">
-      <div className="flex flex-col gap-4 p-4">
-        <TitleField
-          title={title}
-          titleCharCount={titleCharCount}
-          onTitleChange={handleTitleChange}
-        />
+      <div className="flex flex-col gap-4 p-4 metadata-container">
+        <div className="metadata-field">
+          <TitleField
+            title={title}
+            titleCharCount={titleCharCount}
+            onTitleChange={handleTitleChange}
+          />
+        </div>
 
-        <DescriptionField
-          description={description}
-          descriptionCharCount={descriptionCharCount}
-          onDescriptionChange={handleDescriptionChange}
-        />
+        <div className="metadata-field">
+          <DescriptionField
+            description={description}
+            descriptionCharCount={descriptionCharCount}
+            onDescriptionChange={handleDescriptionChange}
+          />
+        </div>
 
-        <KeywordsField
-          keywords={keywords}
-          currentKeyword={currentKeyword}
-          onKeywordChange={(e) => setCurrentKeyword(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onRemoveKeyword={removeKeyword}
-        />
+        <div className="metadata-field">
+          <KeywordsField
+            keywords={keywords}
+            currentKeyword={currentKeyword}
+            onKeywordChange={(e) => setCurrentKeyword(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onRemoveKeyword={removeKeyword}
+          />
+        </div>
 
-        <div>
+        <div className="metadata-field">
           <Button
             onClick={handleGenerate}
             disabled={isGenerating || !selectedFile}

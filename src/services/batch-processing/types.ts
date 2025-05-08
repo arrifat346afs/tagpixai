@@ -27,6 +27,7 @@ export interface ProcessingSettings {
     titleLimit: number;
     descriptionLimit: number;
     keywordLimit: number;
+    includePlaceName: boolean;
   };
 }
 

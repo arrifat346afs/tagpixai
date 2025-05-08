@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import "./navbar.css";
+import "./css/navbar.css";
 import applogo from "../../../TagpixAi3.png";
 import { Tooltip } from "react-tooltip";
 import {

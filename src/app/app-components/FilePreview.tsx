@@ -1,5 +1,6 @@
 import { useContext, useState, useEffect } from "react";
 import { FileContext } from "./FileContext";
+import "./css/FilePreview.css"; // Import the CSS for animations
 
 function FilePreview() {
   const { selectedFile, selectedFiles, setSelectedFile } = useContext(FileContext);
@@ -68,19 +69,19 @@ function FilePreview() {
   }
 
   return (
-    <div className="flex flex-col gap-3 items-center justify-center h-full p-4">
+    <div className="flex flex-col gap-3 items-center justify-center h-full p-4 preview-container">
       <h2 className="text-zinc-400 rounded-md">Preview</h2>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       <div className="flex items-center justify-center h-[calc(100%-40px)] w-full">
         {previewSrc && (
-          <div 
-            className="relative w-full h-full flex items-center justify-center overflow-hidden" 
+          <div
+            className="relative w-full h-full flex items-center justify-center overflow-hidden preview-container"
             style={{ minHeight: '300px' }}
           >
             <img
               src={previewSrc}
               alt="Preview"
-              className="w-auto h-auto object-contain rounded-md border-4 border-zinc-700/50"
+              className="w-auto h-auto object-contain rounded-md border-4 border-zinc-700/50 preview-image preview-image-border"
               style={{
                 maxWidth: '100%',
                 maxHeight: '100%',

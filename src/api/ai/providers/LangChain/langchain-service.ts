@@ -3,6 +3,7 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { HumanMessage, MessageContentImageUrl } from "@langchain/core/messages";
 import type { ProcessingSettings } from "@/services/batch-processing/types";
 import type { AIAnalysisResult } from "../../index";
+import prompts from "../prompts";
 
 export class LangChainService {
   private model: ChatMistralAI | ChatGoogleGenerativeAI;
@@ -65,15 +66,8 @@ export class LangChainService {
 
     console.log(`Sending image to AI model (${imageSizeInMB.toFixed(2)}MB)`);
     // Prepare the prompt for the AI model
-    const prompt = `Please analyze this image and generate:
-        1. A title (maximum ${settings.metadata.titleLimit} characters)
-        2. A description (maximum ${settings.metadata.descriptionLimit} characters)
-        3. Up to ${settings.metadata.keywordLimit} relevant keywords
-
-        Please format the response exactly as:
-        Title: [Main Subject] [Descriptive Detail] [Engaging, Natural Hook that Highlights Beauty or Emotion]
-        Description: [your description]
-        Keywords: [comma-separated keywords]`;
+    const promptText = prompts(settings);
+    console.log("Prompt text:", promptText); // Debug log 
     try {
       const imageContent: MessageContentImageUrl = {
         type: "image_url",
@@ -82,7 +76,7 @@ export class LangChainService {
 
       const response = await this.model.invoke([
         new HumanMessage({
-          content: [{ type: "text", text: prompt }, imageContent],
+          content: [{ type: "text", text: promptText }, imageContent],
         }),
       ]);
     if (!response || !response.content) {

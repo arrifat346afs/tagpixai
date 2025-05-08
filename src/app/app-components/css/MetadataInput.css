@@ -1,0 +1,25 @@
+/* Smooth transitions for metadata fields */
+.metadata-field {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Add a subtle animation when metadata is loaded */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.metadata-container {
+  animation: fade-in 0.3s ease-in-out;
+}
+
+/* Smooth transitions for input fields */
+textarea, input {
+  transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}

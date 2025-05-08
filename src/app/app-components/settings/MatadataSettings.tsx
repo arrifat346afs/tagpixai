@@ -10,6 +10,8 @@ const DEFAULT_SETTINGS = {
   titleLimit: 150,
   descriptionLimit: 150,
   keywordLimit: 25,
+  includePlaceName: false,
+  
 };
 
 function MatadataSettings() {
@@ -32,6 +34,7 @@ function MatadataSettings() {
             titleLimit: Number(savedSettings.titleLimit) || DEFAULT_SETTINGS.titleLimit,
             descriptionLimit: Number(savedSettings.descriptionLimit) || DEFAULT_SETTINGS.descriptionLimit,
             keywordLimit: Number(savedSettings.keywordLimit) || DEFAULT_SETTINGS.keywordLimit,
+            includePlaceName: savedSettings.includePlaceName !== undefined ? savedSettings.includePlaceName : true,
           };
           setSettings(validatedSettings);
         }
@@ -73,6 +76,7 @@ function MatadataSettings() {
         titleLimit: Number(settings.titleLimit),
         descriptionLimit: Number(settings.descriptionLimit),
         keywordLimit: Number(settings.keywordLimit),
+        includePlaceName: settings.includePlaceName,
       };
       
       await window.electron.saveSettings("metadata", settingsToSave);
@@ -198,6 +202,21 @@ function MatadataSettings() {
               Browse
             </Button>
           </div>
+
+        </div>
+        <div>
+          <h4 className="p-2">Include Place Name In the Output</h4>
+          <Input
+            className="border-background/20"
+            type="checkbox"
+            checked={settings.includePlaceName}
+            onChange={(e) =>
+              setSettings({
+                ...settings,
+                includePlaceName: e.target.checked,
+              })
+            }
+          />
         </div>
       </div>
     </div>

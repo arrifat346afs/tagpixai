@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { X, ImageIcon } from "lucide-react";
 import scrollIntoView from "scroll-into-view-if-needed";
 import { MdOutlineImageNotSupported } from "react-icons/md";
-
+import '../css/Thumbnal.css'
 interface ThumbnailData {
   path: string;
   thumbnailUrl: string | null;
@@ -15,7 +15,7 @@ interface ThumbnailData {
   loadingFailed: boolean;
   retryCount: number;
   metadataStatus?: 'complete' | 'incomplete' | undefined;
-  generationFailed?: boolean; // Add this new property
+  generationFailed?: boolean; 
 }
 
 function FileDisplay() {
@@ -89,12 +89,7 @@ function FileDisplay() {
     }
   };
 
-  // We're now handling scrolling directly in the handleFileSelect function
-  // and in the GenerateButton component for AI selections
 
-  // We don't want to automatically scroll on initial load or when thumbnails change
-  // The scrolling will be handled by the GenerateButton component when it sets the selected file
-  // and by the handleFileSelect function when a user manually selects a file
 
   useEffect(() => {
     const loadThumbnails = async () => {
@@ -239,7 +234,7 @@ function FileDisplay() {
   };
 
   return (
-    <ScrollArea className=" p-4 h-full flex flex-col justify-center select-none">
+    <ScrollArea className=" p-4 flex flex-col justify-center select-none">
       <div
         ref={scrollContainerRef}
         className="flex flex-row gap-2"

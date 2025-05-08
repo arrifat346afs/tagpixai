@@ -21,7 +21,7 @@ const KeywordsField: React.FC<KeywordsFieldProps> = ({
 }) => {
   return (
     <>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 pb-4">
         <div className="flex justify-between items-center">
           <span className="text-sm text-zinc-400 select-none">Keywords</span>
           <span className="text-sm text-zinc-400 select-none">
@@ -29,11 +29,11 @@ const KeywordsField: React.FC<KeywordsFieldProps> = ({
           </span>
         </div>
         <Input
-          placeholder="Add keywords (press Enter)"
+          placeholder="Add keywords here (press Enter)"
           value={currentKeyword}
           onChange={onKeywordChange}
           onKeyDown={onKeyDown}
-          className="w-full"
+          className="w-full "
         />
       </div>
 

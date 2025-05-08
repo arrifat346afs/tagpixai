@@ -1,0 +1,58 @@
+/* Animation for thumbnail selection - optimized for performance */
+.thumbnail-highlight {
+  animation: highlight-pulse 0.8s ease-out;
+  will-change: box-shadow; /* Hint to browser to optimize this property */
+  z-index: 10; /* Ensure highlighted thumbnails appear above others */
+}
+
+@keyframes highlight-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+/* Smooth transitions for thumbnail selection */
+.thumbnail-container {
+  transition: border-color 0.3s ease-in-out;
+  will-change: transform; /* Optimize for transforms */
+  transform: translateZ(0); /* Force GPU acceleration */
+}
+
+/* Improve scrolling behavior for Radix UI ScrollArea */
+[data-radix-scroll-area-viewport] {
+  scroll-behavior: smooth !important;
+  -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on iOS */
+  scrollbar-width: thin; /* For Firefox */
+  -ms-overflow-style: none; /* For Internet Explorer and Edge */
+  transition: scroll-left 0.3s ease-out !important;
+  will-change: scroll-position !important;
+  transform: translateZ(0) !important; /* Force GPU acceleration */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+[data-radix-scroll-area-viewport]::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ensure the scroll container has proper behavior */
+.flex-row {
+  scroll-behavior: smooth !important;
+  transition: transform 0.3s ease-out;
+}
+
+/* Improve the scrolling experience */
+.scroll-area-viewport {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Ensure the scroll container has proper behavior */
+div[role="region"] > div {
+  scroll-behavior: smooth !important;
+}

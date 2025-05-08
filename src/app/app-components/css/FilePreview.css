@@ -1,0 +1,25 @@
+/* Smooth transitions for file preview */
+.preview-container {
+  transition: all 0.3s ease-in-out;
+}
+
+.preview-image {
+  transition: all 0.3s ease-in-out;
+  animation: fade-in 0.3s ease-in-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Smooth border transitions */
+.preview-image-border {
+  transition: border-color 0.3s ease-in-out;
+}

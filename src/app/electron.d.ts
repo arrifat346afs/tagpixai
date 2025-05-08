@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface MetadataSettings {
+    includePlaceName: any;
+    includePlaceName: undefined;
     visualTheme: any;
     titleLimit: number;
     descriptionLimit: number;
