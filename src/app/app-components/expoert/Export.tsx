@@ -185,13 +185,13 @@ const Export = () => {
           
         </Button>
       </div>
-      <Separator orientation="vertical" className="bg-zinc-700/50"/>
+      <Separator orientation="vertical" />
       <div className="w-full flex justify-center items-center p-3">
         <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-          <SelectTrigger className="w-full border-background/20 border-1 text-center">
+          <SelectTrigger className="w-full  border-1 text-center">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-[#191818] text-gray-300">
+          <SelectContent>
             <SelectItem value="adobeStock">Adobe Stock</SelectItem>
             <SelectItem value="shutterStock">Shutter Stock</SelectItem>
           </SelectContent>

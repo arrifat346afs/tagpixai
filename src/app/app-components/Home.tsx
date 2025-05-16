@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import Category from "./Catagory";
-import { Toaster } from "sonner";
+// import { ToastContainer} from 'react-toastify';
 import NavBar from "./NavBar";
 import ApiSettings from "./settings/ApiSettings";
 import MatadataSettings from "./settings/MatadataSettings";
@@ -10,6 +10,8 @@ import MetadataInput from "./MetadataInput";
 import ActionButton from "./ActionButton";
 import FileDisplay from "./fileuplode/FileDisplay";
 import ProgressBar from "./ProgressBar";
+import { Toaster } from "sonner";
+
 
 const Home = () => {
   const [showLeft, setShowLeft] = useState(true);
@@ -38,9 +40,9 @@ const Home = () => {
         <Route
           path=""
           element={
-            <div className="h-full flex flex-col border-t border-zinc-700/50 overflow-hidden">
+            <div className="h-full flex flex-col border-t overflow-hidden">
               {/* Main content area with flex layout - add h-[72%] to maintain fixed height */}
-              <div className="flex h-[68%]">
+              <div className="flex h-[64vh]">
                 {/* Left panel */}
                 <div
                   className={`transition-all duration-500 overflow-hidden ${
@@ -76,13 +78,13 @@ const Home = () => {
               </div>
 
               {/* Bottom sections - maintain fixed heights */}
-              <div className="h-[6%] flex-shrink-0">
+              <div className="h-[6vh] flex-shrink-0">
                 <ActionButton />
               </div>
-              <div className="h-[20%] flex-shrink-0">
+              <div className="h-[21vh]">
                 <FileDisplay />
               </div>
-              <div className="h-[7%] flex-shrink-0">
+              <div className="h-[4vh] flex-shrink-0">
                 {/* Progress bar container */}
                 <ProgressBar visible={true} />
               </div>

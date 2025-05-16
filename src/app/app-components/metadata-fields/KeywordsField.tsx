@@ -38,7 +38,7 @@ const KeywordsField: React.FC<KeywordsFieldProps> = ({
       </div>
 
       <div className="flex flex-col gap-2">
-        <ScrollArea className="rounded-md border border-zinc-800">
+        <ScrollArea className="rounded-md border">
           <div className="flex flex-wrap gap-2 p-2 h-[150px]">
             {keywords.length === 0 ? (
               <div className="w-full h-full flex items-center justify-center text-zinc-700">
@@ -49,7 +49,7 @@ const KeywordsField: React.FC<KeywordsFieldProps> = ({
                 <Badge
                   key={index}
                   variant="default"
-                  className="flex items-center gap-1 text-white bg-accent/55 border border-zinc-800 hover:cursor-pointer pointer-events-auto select-none"
+                  className="flex h-6 items-center gap-1 text-white bg-accent/55 border border-accent hover:cursor-pointer hover:bg-primary/45 hover:border-2 hover:border-primary pointer-events-auto select-none"
                 >
                   {keyword}
                   <button
@@ -61,7 +61,7 @@ const KeywordsField: React.FC<KeywordsFieldProps> = ({
                     }}
                     className="flex items-center justify-center"
                   >
-                    <X className="h-3 w-3 !cursor-pointer hover:text-red-400 transition-colors pointer-events-auto" />
+                    <X className="h-3 w-3 !cursor-pointer hover:text-red-400 hover:rotate-90 transition-all ease-in-out  pointer-events-auto" />
                   </button>
                 </Badge>
               ))

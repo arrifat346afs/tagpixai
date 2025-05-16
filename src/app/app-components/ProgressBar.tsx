@@ -47,10 +47,10 @@ const ProgressBar = ({ visible = false }: ProgressBarProps) => {
   if (!visible) return null;
 
   return (
-    <div className="col-span-3 row-start-4">
+    <div className="col-span-3 row-start-4 pt-1 select-none">
       {/* Status text above progress bar */}
-      <div className="mb-2 text-xs flex justify-between items-center">
-        <span className="text-zinc-600 p-2">
+      <span className=" text-xs flex justify-between items-center">
+        <span className="text-zinc-600">
           Processing: {(status?.completed ?? 0) + (status?.failed ?? 0)}/{" "}
           {status?.total} files
           {status?.completed && status.failed > 0 && ` (${status.failed} failed)`}
@@ -58,11 +58,11 @@ const ProgressBar = ({ visible = false }: ProgressBarProps) => {
         <span className="text-zinc-600 pr-2">
           {Math.round(progress)}%
         </span>
-      </div>
+      </span>
       {/* Progress bar container */}
-      <div className="w-full h-3 rounded-md overflow-hidden bg-zinc-800">
+      <div className="w-full h-3 rounded-md overflow-hidden">
         {/* Progress bar fill */}
-         <Progress value={progress} className="bg-transparent"/>
+         <Progress value={progress}/>
 
       </div>
     </div>

@@ -119,7 +119,7 @@ const GenerateButton = () => {
 
       updateStatus(`Failed to process ${fileName}: ${result.error}`);
       toast.error(`AI generation failed for ${fileName}`, {
-        description: result.error,
+       
       });
     }
   };

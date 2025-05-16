@@ -6,18 +6,87 @@ import { existsSync, mkdirSync, rmSync } from "fs";
 import { isDev } from "./util.js";
 import { getPreloadPath } from "./pathResolver.js";
 import Store from "electron-store";
+import  sharp from 'sharp';
 
-let sharpModule: typeof import("sharp") | null = null;
+let sharpModule: typeof sharp | null = null;
 let ffmpegModule: typeof import("fluent-ffmpeg") | null = null;
 
 // Function to dynamically load Sharp module
-export async function loadSharp() {
-  if (!sharpModule) {
-    console.log("Dynamically loading Sharp module");
-    const module = await import("sharp");
-    sharpModule = module.default;
-  }
-  return sharpModule;
+export async function loadSharp(): Promise<typeof sharp> {
+    if (!sharpModule) {
+        console.log("Dynamically loading Sharp module");
+        try {
+            if (app.isPackaged) {
+                // In production, try multiple possible paths for Sharp
+                const possiblePaths = [
+                    // Standard path in app.asar.unpacked
+                    path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', 'sharp'),
+                    // Alternative path sometimes used by electron-builder
+                    path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', '@img', 'sharp-win32-x64'),
+                    // Try the direct path to the platform-specific module
+                    path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', '@img', 'sharp-win32-x64', 'build', 'Release'),
+                    // Try the root node_modules path
+                    path.join(process.resourcesPath, 'node_modules', 'sharp'),
+                    // Try the app path
+                    path.join(app.getAppPath(), 'node_modules', 'sharp')
+                ];
+
+                console.log("Searching for Sharp module in the following locations:");
+                possiblePaths.forEach(p => console.log(` - ${p}`));
+
+                let moduleLoaded = false;
+                let lastError = null;
+
+                // Try each path until we find one that works
+                for (const modulePath of possiblePaths) {
+                    try {
+                        console.log(`Attempting to load Sharp from: ${modulePath}`);
+                        const module = await import(modulePath);
+                        sharpModule = module.default;
+                        console.log("Successfully loaded Sharp module from:", modulePath);
+                        moduleLoaded = true;
+                        break;
+                    } catch (err: any) {
+                        console.log(`Failed to load from ${modulePath}:`, err.message);
+                        lastError = err;
+                    }
+                }
+
+                if (!moduleLoaded) {
+                    // If all paths failed, try the direct import as a last resort
+                    try {
+                        console.log("Attempting direct import of Sharp as last resort");
+                        const module = await import("sharp");
+                        sharpModule = module.default;
+                        console.log("Successfully loaded Sharp via direct import");
+                        moduleLoaded = true;
+                    } catch (err: any) {
+                        console.error("Direct import also failed:", err.message);
+                        lastError = err;
+                    }
+                }
+
+                if (!moduleLoaded) {
+                    throw lastError || new Error("All Sharp module loading attempts failed");
+                }
+            } else {
+                // In development, load normally
+                console.log("Loading Sharp in development mode");
+                const module = await import("sharp");
+                sharpModule = module.default;
+                console.log("Successfully loaded Sharp in development mode");
+            }
+        } catch (error: any) {
+            console.error("Error loading Sharp module:", error);
+            throw new Error(`Failed to load Sharp module: ${error.message}. Please ensure Sharp is correctly installed.`);
+        }
+    }
+
+    if (!sharpModule) {
+        throw new Error("Sharp module failed to initialize");
+    }
+
+    return sharpModule;
 }
 
 // Function to dynamically load ffmpeg module
@@ -134,11 +203,6 @@ app.whenReady().then(() => {
     mainWindow.loadURL("http://localhost:5000");
   } else {
     mainWindow.loadFile(path.join(app.getAppPath(), "/dist-react/index.html"));
-    mainWindow.webContents.on("before-input-event", (event, input) => {
-      if (input.control && input.shift && input.key.toLowerCase() === "i") {
-        event.preventDefault();
-      }
-    });
   }
 });
 

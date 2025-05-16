@@ -50,13 +50,7 @@ const ApiSettings = () => {
   const handleSave = async () => {
     try {
       await window.electron.saveSettings("api", settings);
-      toast.success("API settings saved successfully", {
-        style: {
-          background: "black",
-          color: "white",
-          border: "1px solid #343333",
-        },
-      });
+      toast.success("API settings saved successfully", );
     } catch (error) {
       console.error("Failed to save API settings:", error);
       toast.error("Failed to save settings");
@@ -67,13 +61,7 @@ const ApiSettings = () => {
     try {
       await window.electron.saveSettings("api", null);
       setSettings(DEFAULT_SETTINGS);
-      toast.success("API settings cleared successfully", {
-        style: {
-          background: "black",
-          color: "white",
-          border: "1px solid #343333",
-        },
-      });
+      toast.success("API settings cleared successfully");
     } catch (error) {
       console.error("Failed to clear API settings:", error);
       toast.error("Failed to clear settings");
@@ -81,7 +69,7 @@ const ApiSettings = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden border-t border-zinc-700/50">
+    <div className="flex h-screen overflow-hidden border-t">
       <div className="flex flex-col w-full h-full pt-1">
         <Link to="/">
           <Button variant="ghost" className="justify-start gap-2">
@@ -205,7 +193,7 @@ const ApiSettings = () => {
                 {/* Buttons */}
                 <div className="flex justify-between w-80 gap-4">
                   <Button
-                    className="flex-1 text-black hover:bg-blue-800"
+                    className="flex-1"
                     onClick={handleSave}
                   >
                     Save

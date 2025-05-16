@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
-
-import { toast } from "sonner";
+import {  toast } from "sonner";
+// import {  Toaster } from "@/components/ui/sonner";
 
 // Default values
 const DEFAULT_SETTINGS = {
@@ -11,7 +12,6 @@ const DEFAULT_SETTINGS = {
   descriptionLimit: 150,
   keywordLimit: 25,
   includePlaceName: false,
-  
 };
 
 function MatadataSettings() {
@@ -22,8 +22,10 @@ function MatadataSettings() {
     const loadSettings = async () => {
       try {
         const savedSettings = await window.electron.getSettings("metadata");
-        const savedOutputDirectory = await window.electron.getSettings("outputDirectory");
-        
+        const savedOutputDirectory = await window.electron.getSettings(
+          "outputDirectory"
+        );
+
         if (!savedSettings) {
           await window.electron.saveSettings("metadata", DEFAULT_SETTINGS);
           setSettings(DEFAULT_SETTINGS);
@@ -31,10 +33,18 @@ function MatadataSettings() {
           const validatedSettings = {
             ...DEFAULT_SETTINGS,
             ...savedSettings,
-            titleLimit: Number(savedSettings.titleLimit) || DEFAULT_SETTINGS.titleLimit,
-            descriptionLimit: Number(savedSettings.descriptionLimit) || DEFAULT_SETTINGS.descriptionLimit,
-            keywordLimit: Number(savedSettings.keywordLimit) || DEFAULT_SETTINGS.keywordLimit,
-            includePlaceName: savedSettings.includePlaceName !== undefined ? savedSettings.includePlaceName : true,
+            titleLimit:
+              Number(savedSettings.titleLimit) || DEFAULT_SETTINGS.titleLimit,
+            descriptionLimit:
+              Number(savedSettings.descriptionLimit) ||
+              DEFAULT_SETTINGS.descriptionLimit,
+            keywordLimit:
+              Number(savedSettings.keywordLimit) ||
+              DEFAULT_SETTINGS.keywordLimit,
+            includePlaceName:
+              savedSettings.includePlaceName !== undefined
+                ? savedSettings.includePlaceName
+                : true,
           };
           setSettings(validatedSettings);
         }
@@ -55,13 +65,7 @@ function MatadataSettings() {
     try {
       await window.electron.saveSettings("metadata", DEFAULT_SETTINGS);
       setSettings(DEFAULT_SETTINGS);
-      toast.success("Settings reset successfully!", {
-        style: {
-          background: "black",
-          color: "white",
-          border: "1px solid #343333",
-        },
-      });
+      toast.success("Settings reset successfully!");
     } catch (error) {
       console.error("Failed to reset settings:", error);
       toast.error("Failed to reset settings!");
@@ -78,14 +82,11 @@ function MatadataSettings() {
         keywordLimit: Number(settings.keywordLimit),
         includePlaceName: settings.includePlaceName,
       };
-      
+
       await window.electron.saveSettings("metadata", settingsToSave);
-      toast.success("Settings saved successfully!", {
-        style: {
-          background: "black",
-          color: "white",
-          border: "1px solid #343333",
-        },
+      toast.success("successfully saved settings", {
+        position: "bottom-right",
+        className: "black-background",
       });
     } catch (error) {
       console.error("Failed to save settings:", error);
@@ -97,24 +98,28 @@ function MatadataSettings() {
 
   const handleFileSelect = async () => {
     try {
-      console.log('Opening directory dialog...'); // Debug log
+      console.log("Opening directory dialog..."); // Debug log
       const directories = await window.electron.openDirectoryDialog();
-      console.log('Selected directories:', directories); // Debug log
-      
+      console.log("Selected directories:", directories); // Debug log
+
       if (directories && Array.isArray(directories) && directories.length > 0) {
         const selectedPath = directories[0];
         setSelectedFilePath(selectedPath);
-        
+
         // Save the output directory path to electron store
         await window.electron.saveSettings("outputDirectory", selectedPath);
-        
-        toast.success('Directory selected successfully!');
+
+        toast.success("Directory selected successfully!");
       } else {
-        console.log('No directory selected or invalid response'); // Debug log
+        console.log("No directory selected or invalid response"); // Debug log
       }
     } catch (error) {
-      console.error('Error selecting directory:', error);
-      toast.error(`Failed to select directory: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Error selecting directory:", error);
+      toast.error(
+        `Failed to select directory: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
@@ -177,7 +182,7 @@ function MatadataSettings() {
           />
         </div>
         <div className="flex w-full justify-between gap-4">
-          <Button className="flex-1 text-black hover:bg-blue-800" onClick={handleSave}>
+          <Button className="flex-1" onClick={handleSave}>
             Save
           </Button>
           <Button className="flex-1 " variant="outline" onClick={handleReset}>
@@ -195,25 +200,22 @@ function MatadataSettings() {
               placeholder="No directory selected"
             />
             <Button
-            variant="outline"
+              variant="outline"
               className="w-30"
               onClick={handleFileSelect}
             >
               Browse
             </Button>
           </div>
-
         </div>
-        <div>
+        <div className="flex justify-between">
           <h4 className="p-2">Include Place Name In the Output</h4>
-          <Input
-            className="border-background/20"
-            type="checkbox"
+          <Switch
             checked={settings.includePlaceName}
-            onChange={(e) =>
+            onCheckedChange={(checked) =>
               setSettings({
                 ...settings,
-                includePlaceName: e.target.checked,
+                includePlaceName: checked,
               })
             }
           />

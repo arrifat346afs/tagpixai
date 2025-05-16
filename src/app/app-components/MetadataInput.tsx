@@ -2,9 +2,10 @@ import React, { useState, useEffect, useContext } from "react";
 import { Button } from "@/components/ui/button";
 import { AIAnalysisResult } from "@/api/ai";
 import { toast } from "sonner";
+// import { useToast } from "@/hooks/use-toast"
 import { batchProcessor } from "@/services/batch-processing/processor";
 import { FileContext } from "./FileContext";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import TitleField from "./metadata-fields/TitleField";
 import DescriptionField from "./metadata-fields/DescriptionField";
 import KeywordsField from "./metadata-fields/KeywordsField";
@@ -24,6 +25,9 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [titleCharCount, setTitleCharCount] = useState(0);
   const [descriptionCharCount, setDescriptionCharCount] = useState(0);
+  // const { toast } = useToast()
+ 
+
 
   // Add effect to update character counts
   useEffect(() => {
@@ -43,8 +47,7 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
 
       if (isIncomplete) {
         toast.warning("Incomplete metadata", {
-          description: "Some metadata fields are missing or empty",
-          duration: 3000,
+
         });
       }
 
@@ -263,8 +266,8 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
     }
   };
   return (
-    <ScrollArea className="h-full w-full border-l border-zinc-700/50">
-      <div className="flex flex-col gap-4 p-4 metadata-container">
+    <ScrollArea className="h-full w-full border-l">
+      <div className="flex flex-col gap-4 p-4">
         <div className="metadata-field">
           <TitleField
             title={title}
@@ -301,7 +304,7 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
           </Button>
         </div>
       </div>
-      <ScrollBar orientation="vertical" />
+      {/* <ScrollBar orientation="vertical" /> */}
     </ScrollArea>
   );
 };

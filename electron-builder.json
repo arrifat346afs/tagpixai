@@ -36,7 +36,14 @@
     },
     "asarUnpack": [
       "node_modules/@img/sharp-win32-x64/**/*",
-      "node_modules/ffmpeg-static/**/*"
+      "node_modules/sharp/**/*",
+      "node_modules/ffmpeg-static/**/*",
+      "node_modules/color/**/*",
+      "node_modules/color-string/**/*",
+      "node_modules/color-convert/**/*",
+      "node_modules/color-name/**/*",
+      "node_modules/detect-libc/**/*",
+      "node_modules/semver/**/*"
     ],
     "electronLanguages": ["en-US"],
     "win": {

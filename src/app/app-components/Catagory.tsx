@@ -206,11 +206,11 @@ const Category = () => {
 
 
   return (
-    <div className="flex flex-col gap-4 h-full justify-center items-center border-r border-zinc-700/50">
+    <div className="select-none flex flex-col gap-4 h-full justify-center items-center border-r">
       <div className="w-full flex flex-col gap-2 items-center p-3">
         <h4 className="text-center text-l text-zinc-500">Adobe Stock</h4>
         <Select  value={adobeStock} onValueChange={setAdobeStock} >
-          <SelectTrigger className="w-full border-background/20 border-1 text-center bg-transparent">
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -242,7 +242,7 @@ const Category = () => {
       <div className="flex gap-4 w-full px-3">
         <div className="w-full flex justify-center items-center">
           <Select value={shutterStock1} onValueChange={setShutterStock1}>
-            <SelectTrigger className="w-full border-background/20 border-1 text-center">
+            <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent >
@@ -285,7 +285,7 @@ const Category = () => {
         </div>
         <div className="w-full flex justify-center items-center">
           <Select value={shutterStock2} onValueChange={setShutterStock2}>
-            <SelectTrigger className="w-full border-background/20 border-1 text-center">
+            <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent >

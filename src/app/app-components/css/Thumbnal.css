@@ -1,58 +1,75 @@
-/* Animation for thumbnail selection - optimized for performance */
-.thumbnail-highlight {
-  animation: highlight-pulse 0.8s ease-out;
-  will-change: box-shadow; /* Hint to browser to optimize this property */
-  z-index: 10; /* Ensure highlighted thumbnails appear above others */
+/* Custom scrollbar styles using CSS variables */
+:root {
+  --scrollbar-thumb: var(--scrollbar-thumb-color, #312c43);
+  --scrollbar-thumb-hover: var(
+    --scrollbar-thumb-hover-color,
+    rgba(85, 85, 85, 0.9)
+  );
+  --scrollbar-track: var(--scrollbar-track-color, transparent);
+  --scrollbar-height: var(--scrollbar-height-size, 8px);
+  --scrollbar-radius: var(--scrollbar-radius-size, 4px);
+
+  --highlight-color: var(--highlight-animation-color, rgba(59, 130, 246, 0.5));
+  --highlight-color-fade: var(
+    --highlight-animation-fade-color,
+    rgba(59, 130, 246, 0)
+  );
 }
 
+/* Custom scrollbar styles */
+.custom-scrollbar::-webkit-scrollbar {
+  scroll-behavior: smooth;
+  height: var(--scrollbar-height);
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  margin: 0 4px;
+  border-radius: var(--scrollbar-radius);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--scrollbar-radius);
+  transition: background-color 0.3s ease;
+}
+
+
+/* Hide scrollbar when not hovering */
+.hide-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* Show scrollbar when hovering */
+.show-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+}
+
+/* Auto-selection animation - smoother version */
 @keyframes highlight-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+    box-shadow: 0 0 0 0 var(--highlight-color);
+    transform: scale(1);
+  }
+  20% {
+    box-shadow: 0 0 0 4px var(--highlight-color);
+    transform: scale(1.02);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.7);
+    box-shadow: 0 0 0 8px var(--highlight-color-fade);
+    transform: scale(1.01);
+  }
+  80% {
+    box-shadow: 0 0 0 4px var(--highlight-color-fade);
+    transform: scale(1.005);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    box-shadow: 0 0 0 0 var(--highlight-color-fade);
+    transform: scale(1);
   }
 }
 
-/* Smooth transitions for thumbnail selection */
-.thumbnail-container {
-  transition: border-color 0.3s ease-in-out;
-  will-change: transform; /* Optimize for transforms */
-  transform: translateZ(0); /* Force GPU acceleration */
-}
-
-/* Improve scrolling behavior for Radix UI ScrollArea */
-[data-radix-scroll-area-viewport] {
-  scroll-behavior: smooth !important;
-  -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on iOS */
-  scrollbar-width: thin; /* For Firefox */
-  -ms-overflow-style: none; /* For Internet Explorer and Edge */
-  transition: scroll-left 0.3s ease-out !important;
-  will-change: scroll-position !important;
-  transform: translateZ(0) !important; /* Force GPU acceleration */
-}
-
-/* Hide scrollbar for Chrome, Safari and Opera */
-[data-radix-scroll-area-viewport]::-webkit-scrollbar {
-  display: none;
-}
-
-/* Ensure the scroll container has proper behavior */
-.flex-row {
-  scroll-behavior: smooth !important;
-  transition: transform 0.3s ease-out;
-}
-
-/* Improve the scrolling experience */
-.scroll-area-viewport {
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-}
-
-/* Ensure the scroll container has proper behavior */
-div[role="region"] > div {
-  scroll-behavior: smooth !important;
+.auto-selected {
+  animation: highlight-pulse 1.5s cubic-bezier(0.215, 0.61, 0.355, 1);
 }

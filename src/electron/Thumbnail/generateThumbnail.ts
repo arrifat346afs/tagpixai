@@ -70,16 +70,35 @@ export async function generateThumbnail(
     // Handle images
     try {
       if (!existsSync(thumbnailPath)) {
-        // Dynamically load Sharp
-        const Sharp = await loadSharp();
+        try {
+          // Try to use Sharp first
+          const Sharp = await loadSharp();
 
-        await Sharp(filePath)
-          .resize(undefined, 256, {
-            fit: "inside",
-            withoutEnlargement: true,
-          })
-          .png() // Change to PNG format to preserve transparency
-          .toFile(thumbnailPath);
+          await Sharp(filePath)
+            .resize(undefined, 256, {
+              fit: "inside",
+              withoutEnlargement: true,
+            })
+            .png() // Change to PNG format to preserve transparency
+            .toFile(thumbnailPath);
+
+          console.log("Successfully generated thumbnail with Sharp");
+        } catch (sharpError) {
+          // Fallback to a simple file copy if Sharp fails
+          console.error("Sharp thumbnail generation failed, using fallback:", sharpError);
+
+          try {
+            // Read the original file
+            const originalBuffer = await fs.readFile(filePath);
+
+            // Write it to the thumbnail location
+            await fs.writeFile(thumbnailPath, originalBuffer);
+            console.log("Used file copy as thumbnail fallback");
+          } catch (fallbackError) {
+            console.error("Fallback thumbnail generation also failed:", fallbackError);
+            throw fallbackError;
+          }
+        }
       }
 
       // Verify thumbnail was created
@@ -87,7 +106,14 @@ export async function generateThumbnail(
         throw new Error("Thumbnail generation failed");
       }
 
-      return { path: thumbnailPath };
+      // Read the thumbnail for base64 encoding
+      const thumbnailBuffer = await fs.readFile(thumbnailPath);
+      const base64Data = thumbnailBuffer.toString("base64");
+
+      return {
+        path: thumbnailPath,
+        base64: base64Data
+      };
     } catch (error) {
       console.error("Image thumbnail generation error:", error);
       throw error;

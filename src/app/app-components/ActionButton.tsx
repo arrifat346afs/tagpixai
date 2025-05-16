@@ -6,12 +6,12 @@ import GenerateButton from "./generate-button/GenerateButton"
 
 const ActionButton = () => {
   return (
-    <div className=" col-span-3 h-full border-b border-t border-zinc-700/50 select-none">
+    <div className=" col-span-3 h-full border-b border-t select-none">
       <div className="flex gap-4 justify-center items-center h-full my-2">
         <FileSelector/>
-        <Separator orientation="vertical" className="bg-zinc-700/50"/>
+        <Separator orientation="vertical" />
         <GenerateButton/>
-        <Separator orientation="vertical" className="bg-zinc-700/50"/>
+        <Separator orientation="vertical" />
         <Export/>
       </div>
     </div>
