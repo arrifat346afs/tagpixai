@@ -23,8 +23,8 @@ const KeywordsField: React.FC<KeywordsFieldProps> = ({
     <>
       <div className="flex flex-col gap-2 pb-4">
         <div className="flex justify-between items-center">
-          <span className="text-sm text-zinc-400 select-none">Keywords</span>
-          <span className="text-sm text-zinc-400 select-none">
+          <span className="text-sm text-zinc-500 select-none">Keywords</span>
+          <span className="text-sm text-zinc-500 select-none">
             {keywords.length} keywords
           </span>
         </div>

@@ -10,9 +10,7 @@ import MetadataInput from "./MetadataInput";
 import ActionButton from "./ActionButton";
 import FileDisplay from "./fileuplode/FileDisplay";
 import ProgressBar from "./ProgressBar";
-import { Toaster } from "sonner";
-
-
+import { Toaster } from "@/components/ui/sonner"
 const Home = () => {
   const [showLeft, setShowLeft] = useState(true);
   const [showRight, setShowRight] = useState(true);
@@ -33,7 +31,6 @@ const Home = () => {
         toggleLeft={toggleLeft}
         toggleRight={toggleRight}
       />
-      <Toaster />
       <Routes>
         <Route path="api-settings" element={<ApiSettings />} />
         <Route path="metadata-settings" element={<MatadataSettings />} />
@@ -92,6 +89,7 @@ const Home = () => {
           }
         />
       </Routes>
+        <Toaster />
     </div>
   );
 };

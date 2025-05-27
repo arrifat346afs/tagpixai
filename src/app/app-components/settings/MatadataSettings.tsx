@@ -2,8 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
-import {  toast } from "sonner";
-// import {  Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 // Default values
 const DEFAULT_SETTINGS = {
@@ -55,7 +54,9 @@ function MatadataSettings() {
         }
       } catch (error) {
         console.error("Failed to load settings:", error);
-        toast.error("Failed to load settings!");
+        toast(
+          "Failed to load settings! Please check the console for more details."
+        );
       }
     };
     loadSettings();
@@ -65,10 +66,14 @@ function MatadataSettings() {
     try {
       await window.electron.saveSettings("metadata", DEFAULT_SETTINGS);
       setSettings(DEFAULT_SETTINGS);
-      toast.success("Settings reset successfully!");
+      toast(
+        "Settings reset successfully! Settings have been reset to default values."
+      );
     } catch (error) {
       console.error("Failed to reset settings:", error);
-      toast.error("Failed to reset settings!");
+      toast(
+        "Failed to reset settings! Please check the console for more details."
+      );
     }
   };
 
@@ -84,13 +89,12 @@ function MatadataSettings() {
       };
 
       await window.electron.saveSettings("metadata", settingsToSave);
-      toast.success("successfully saved settings", {
-        position: "bottom-right",
-        className: "black-background",
-      });
+      toast("Settings saved successfully! Your settings have been saved.");
     } catch (error) {
       console.error("Failed to save settings:", error);
-      toast.error("Failed to save settings!");
+      toast(
+        "Failed to save settings! Please check the console for more details."
+      );
     }
   };
 
@@ -109,16 +113,16 @@ function MatadataSettings() {
         // Save the output directory path to electron store
         await window.electron.saveSettings("outputDirectory", selectedPath);
 
-        toast.success("Directory selected successfully!");
+        toast(
+          "Directory selected successfully! Your output directory has been set."
+        );
       } else {
         console.log("No directory selected or invalid response"); // Debug log
       }
     } catch (error) {
       console.error("Error selecting directory:", error);
-      toast.error(
-        `Failed to select directory: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+      toast(
+        "Failed to select directory! Please check the console for more details."
       );
     }
   };

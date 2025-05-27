@@ -11,6 +11,8 @@ import {
 import { TextShimmer } from "@/components/motion-primitives/text-shimmer";
 import scrollIntoView from "scroll-into-view-if-needed";
 import '../css/Thumbnal.css'
+import { sendModelUsage } from "@/api/modelUsage";
+// import { data } from "react-router-dom";
 
 const GenerateButton = () => {
   const { selectedFiles, setSelectedFile, setSelectedFileMetadata } =
@@ -119,7 +121,7 @@ const GenerateButton = () => {
 
       updateStatus(`Failed to process ${fileName}: ${result.error}`);
       toast.error(`AI generation failed for ${fileName}`, {
-       
+
       });
     }
   };
@@ -218,6 +220,28 @@ const GenerateButton = () => {
 
       updateStatus("Processing completed");
       toast.success("Processing completed");
+
+      // Send model usage data to the API
+      try {
+        const modelUsageData = {
+          modelName: settings.api.model,
+          imageCount: selectedFiles.length,
+          date: new Date().toISOString(),
+          userId: localStorage.getItem("userId"),
+        };
+
+        console.log("Sending model usage data:", modelUsageData.userId);
+        const result = await sendModelUsage(modelUsageData);
+
+        if (result.success) {
+          console.log("Model usage data sent successfully");
+          
+        } else {
+          console.error("Failed to send model usage data:", result.error);
+        }
+      } catch (apiError) {
+        console.error("Error sending model usage data:", apiError);
+      }
     } catch (error) {
       console.error("Generation error:", error);
       const errorMessage =

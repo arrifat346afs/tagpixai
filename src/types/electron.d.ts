@@ -51,6 +51,18 @@ declare global {
       ) => Promise<void>;
       isFullScreen: () => Promise<boolean>;
       isFocused: () => Promise<boolean>;
+      // Model usage API
+      sendModelUsage: (data: {
+        modelName: string;
+        imageCount: number;
+        date?: string
+      }) => Promise<{ success: boolean; data?: any; error?: string }>;
+      getModelUsage: () => Promise<{
+        success: boolean;
+        data?: Array<{ modelName: string; imageCount: number; date: string }>;
+        error?: string
+      }>;
+      clearModelUsage: () => Promise<{ success: boolean; error?: string }>;
     };
   }
 }

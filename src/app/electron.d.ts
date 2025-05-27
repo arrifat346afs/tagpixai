@@ -15,11 +15,15 @@ interface ApiSettings {
     requestInterval: number;
 }
 
-type SettingsKey = 'metadata' | 'api' | 'outputDirectory';
+type SettingsKey = 'metadata' | 'api' | 'outputDirectory' | 'userEmail';
 type SettingsValue<T extends SettingsKey> = T extends 'metadata'
     ? MetadataSettings
     : T extends 'api'
     ? ApiSettings
+    : T extends 'outputDirectory'
+    ? string // Assuming outputDirectory is a string
+    : T extends 'userEmail'
+    ? string
     : never;
 
 interface ElectronAPI {
@@ -47,6 +51,18 @@ interface ElectronAPI {
     getFileMetadata: (filePath: string) => Promise<AIAnalysisResult | null>;
     saveFileMetadata: (filePath: string, metadata: AIAnalysisResult) => Promise<void>;
     clearFileMetadata: (filePath: string) => Promise<boolean>;
+    // Model usage API
+    sendModelUsage: (data: {
+        modelName: string;
+        imageCount: number;
+        date?: string
+    }) => Promise<{ success: boolean; data?: any; error?: string }>;
+    getModelUsage: () => Promise<{
+        success: boolean;
+        data?: Array<{ modelName: string; imageCount: number; date: string }>;
+        error?: string
+    }>;
+    clearModelUsage: () => Promise<{ success: boolean; error?: string }>;
 }
 
 declare interface Window {

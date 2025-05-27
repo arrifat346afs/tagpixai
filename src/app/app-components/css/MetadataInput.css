@@ -1,3 +1,5 @@
+
+
 /* Smooth transitions for metadata fields */
 .metadata-field {
   transition: all 0.3s ease-in-out;
@@ -23,3 +25,4 @@
 textarea, input {
   transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
+

@@ -3,6 +3,7 @@
 TagPix AI is an Electron-based desktop application built with React, TypeScript, and Vite that helps generate and manage metadata for images using AI.
 
 ## Prerequisites
+
 - electron (v35.0.0 or higher)
 - Node.js (v14.0.0 or higher)
 - npm (v6.0.0 or higher)
@@ -11,12 +12,14 @@ TagPix AI is an Electron-based desktop application built with React, TypeScript,
 ## Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/arrifat346afs/react-electron-tagpix-ai.git
 cd react-electron-tagpix-ai
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
@@ -24,27 +27,32 @@ npm install
 ## Development
 
 Run the development server:
+
 ```bash
 npm run dev
 ```
 
 This will start both:
+
 - Vite dev server for React (port 5000)
 - Electron app in development mode
 
 ## Building
 
 ### For Windows:
+
 ```bash
 npm run dist:win
 ```
 
 ### For macOS:
+
 ```bash
 npm run dist:mac
 ```
 
 ### For Linux:
+
 ```bash
 npm run dist:linux
 ```
@@ -128,4 +136,3 @@ src/
 ## Contributing
 
 [Your Contributing Guidelines Here]
-

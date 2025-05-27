@@ -13,7 +13,7 @@ const DescriptionField: React.FC<DescriptionFieldProps> = ({
   onDescriptionChange,
 }) => {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 h-[17vh]">
       <div className="flex justify-between items-center">
         <span className="text-sm text-zinc-400 select-none">Description</span>
         <span className="text-sm text-zinc-500 select-none">
@@ -23,7 +23,7 @@ const DescriptionField: React.FC<DescriptionFieldProps> = ({
       <Textarea
         value={description}
         onChange={onDescriptionChange}
-        className="w-full min-h-[100px]"
+        className="w-full min-h-[100px] max-h-[100px] overflow-y-auto custom-scrollbar"
       />
     </div>
   );

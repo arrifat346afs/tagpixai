@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import { Button } from "@/components/ui/button";
 import { AIAnalysisResult } from "@/api/ai";
 import { toast } from "sonner";
-// import { useToast } from "@/hooks/use-toast"
 import { batchProcessor } from "@/services/batch-processing/processor";
 import { FileContext } from "./FileContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -25,8 +24,8 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [titleCharCount, setTitleCharCount] = useState(0);
   const [descriptionCharCount, setDescriptionCharCount] = useState(0);
-  // const { toast } = useToast()
- 
+
+
 
 
   // Add effect to update character counts
@@ -239,6 +238,26 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
 
             // Notify parent if needed
             onMetadataChange?.(metadata);
+
+            // Send model usage data to the API
+            try {
+              const modelUsageData = {
+                modelName: settings.api.model,
+                imageCount: 1,
+                date: new Date().toISOString()
+              };
+
+              console.log("Sending model usage data:", modelUsageData);
+              const apiResult = await window.electron.sendModelUsage(modelUsageData);
+
+              if (apiResult.success) {
+                console.log("Model usage data sent successfully");
+              } else {
+                console.error("Failed to send model usage data:", apiResult.error);
+              }
+            } catch (apiError) {
+              console.error("Error sending model usage data:", apiError);
+            }
           }
         }
       );
@@ -268,7 +287,7 @@ const MetadataInput: React.FC<MetadataInputProps> = ({ onMetadataChange }) => {
   return (
     <ScrollArea className="h-full w-full border-l">
       <div className="flex flex-col gap-4 p-4">
-        <div className="metadata-field">
+        <div className="metadata-field h-[13vh]">
           <TitleField
             title={title}
             titleCharCount={titleCharCount}
