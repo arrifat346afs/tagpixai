@@ -228,7 +228,7 @@ const UserProfile = () => {
   );
 
   return (
-    <div className="flex overflow-hidden justify-center p-4 space-y-4 gap-4">
+    <div className="flex flex-col overflow-hidden justify-center p-4 space-y-4 gap-4">
       <UserInfoCard />
       {userData?.subscription && <SubscriptionCard />}
     </div>

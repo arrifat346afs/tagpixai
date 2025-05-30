@@ -1,5 +1,6 @@
 import type { ProcessingSettings } from "@/services/batch-processing/types";
 import type { AIAnalysisResult } from "../../index";
+import prompts from "../prompts";
 
 export class GroqService {
   private apiKey: string;
@@ -54,15 +55,8 @@ export class GroqService {
     console.log(`Sending image to Groq API (${imageSizeInMB.toFixed(2)}MB)`);
 
     // Prepare the prompt for the Groq API
-    const prompt = `Please analyze this image and generate:
-        1. A title (exactly ${settings.metadata.titleLimit} characters)
-        2. A description (maximum ${settings.metadata.descriptionLimit} characters)
-        3. Up to ${settings.metadata.keywordLimit} relevant keywords
-
-        Please format the response exactly as:
-        Title: [Main Subject] [Descriptive Detail] [Engaging, Natural Hook that Highlights Beauty or Emotion]
-        Description: [your description]
-        Keywords: [comma-separated keywords]`;
+     const prompt = prompts(settings);
+     console.log(`Using prompt: ${prompt}`);
 
     try {
       // Direct API call to Groq

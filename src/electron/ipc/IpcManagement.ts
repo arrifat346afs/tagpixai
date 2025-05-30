@@ -5,7 +5,7 @@ import { getMimeType, store, tempCategoryStore } from "../main.js";
 import fs from "fs/promises";
 import path from "path";
 import { resizeImageForAI } from "../resizeImage/resizeImageForAI.js";
-import fetch from "node-fetch";
+// import fetch from "node-fetch";
 import * as dotenv from 'dotenv';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });

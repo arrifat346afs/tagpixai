@@ -1,7 +1,6 @@
-import { Link, useLocation } from "react-router-dom";
+// import { Link, useLocation } from "react-router-dom";
 import "./css/navbar.css";
 import applogo from "../../../TagpixAi3.png";
-// import { Tooltip } from "react-tooltip";
 import {
   VscChromeClose,
   VscChromeMaximize,
@@ -15,6 +14,12 @@ import {
 import { useState, useEffect, useCallback } from "react";
 import { IoSettings, IoSettingsOutline } from "react-icons/io5";
 import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import ApiSettings from "./settings/ApiSettings";
 
 interface NavBarProps {
   showLeft: boolean;
@@ -29,10 +34,11 @@ const NavBar = ({
   toggleLeft,
   toggleRight,
 }: NavBarProps) => {
-  const location = useLocation();
-  const currentPage = location.pathname;
+
+
   const [isMaximized, setIsMaximized] = useState(false);
   const [isFocused, setIsFocused] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     // Set up window state event listeners
@@ -88,21 +94,18 @@ const NavBar = ({
         <div className="flex justify-center flex-row items-center p-1 pr-3">
           <img src={applogo} alt="logo" className="h-7 w-7" />
         </div>
-        <TooltipTrigger>
-          <Link
-            to={"/api-settings"}
-            className={`text-xl flex justify-center items-center h-9 text-zinc-300 hover:text-zinc-100 ${iconColor}`}
-          >
-            {currentPage === "/api-settings" ? (
-              <IoSettings />
-            ) : (
-              <IoSettingsOutline />
-            )}
-          </Link>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p className="select-none">Settings</p>
-        </TooltipContent>
+        <Dialog open={showSettings} onOpenChange={setShowSettings}>
+          <DialogTrigger asChild>
+            <button
+              className={`text-xl flex justify-center items-center h-9 text-zinc-300 hover:text-zinc-100 ${iconColor}`}
+            >
+              {showSettings ? <IoSettings /> : <IoSettingsOutline />}
+            </button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl h-[80vh] bg-background">
+            <ApiSettings onClose={() => setShowSettings(false)} />
+          </DialogContent>
+        </Dialog>
       </div>
       <div className="flex items-center h-full">
         {/* Toggle buttons directly in the NavBar */}

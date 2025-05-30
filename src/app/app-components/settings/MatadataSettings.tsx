@@ -129,7 +129,7 @@ function MatadataSettings() {
 
   return (
     <div className="flex flex-col items-center gap-6 text-gray-400">
-      <h2 className="text-2xl font-bold text-gray-400">Metadata Settings</h2>
+      {/* <h2 className="text-2xl font-bold text-gray-400">Metadata Settings</h2> */}
       <div className="w-full max-w-md flex flex-col gap-4">
         <div>
           <div className="flex gap-3 p-2">
