@@ -10,7 +10,6 @@ import {
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import MatadataSettings from "./MatadataSettings";
-import UserProfile from "./UserProfile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DialogTitle, DialogHeader } from "@/components/ui/dialog";
 
@@ -214,9 +213,7 @@ const ApiSettings = ({ onClose }: ApiSettingsProps) => {
             <MatadataSettings />
           </TabsContent>
 
-          <TabsContent value="userprofile">
-            <UserProfile />
-          </TabsContent>
+
         </Tabs>
       </div>
     </div>
