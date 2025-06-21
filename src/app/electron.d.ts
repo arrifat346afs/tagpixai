@@ -27,6 +27,7 @@ type SettingsValue<T extends SettingsKey> = T extends 'metadata'
     : never;
 
 interface ElectronAPI {
+    embedMetadata(filePath: string, arg1: { title: string; description: string; keywords: string[]; }): unknown;
     onWindowStateChange(arg0: (state: any) => void): unknown;
     minimize: () => void;
     maximize: () => void;

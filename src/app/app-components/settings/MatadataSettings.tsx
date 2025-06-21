@@ -212,8 +212,8 @@ function MatadataSettings() {
             </Button>
           </div>
         </div>
-        <div className="flex justify-between">
-          <h4 className="p-2">Include Place Name In the Output</h4>
+        <div className="flex justify-between p-2">
+          <h4 >Include Place Name In the Output</h4>
           <Switch
             checked={settings.includePlaceName}
             onCheckedChange={(checked) =>

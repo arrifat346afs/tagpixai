@@ -3,7 +3,7 @@ import { useState } from "react";
 import Category from "./Catagory";
 // import { ToastContainer} from 'react-toastify';
 import NavBar from "./NavBar";
-import ApiSettings from "./settings/ApiSettings";
+import ApiSettings from "./settings/Settings";
 import MatadataSettings from "./settings/MatadataSettings";
 import FilePreview from "./FilePreview";
 import MetadataInput from "./MetadataInput";

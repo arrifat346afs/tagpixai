@@ -1,3 +1,5 @@
+// import React from 'react'
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -7,11 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import MatadataSettings from "./MatadataSettings";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DialogTitle, DialogHeader } from "@/components/ui/dialog";
 
 interface ApiSettings {
   provider: string;
@@ -71,150 +70,116 @@ const ApiSettings = ({ onClose }: ApiSettingsProps) => {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <DialogHeader>
-        <DialogTitle className="text-2xl font-bold">
-          Settings
-        </DialogTitle>
-      </DialogHeader>
-      <div className="flex-1 overflow-y-auto pt-4">
-        <Tabs defaultValue="api" className="w-full">
-          <TabsList className="grid h-11 w-full grid-cols-3 border bg-background/50">
-            <TabsTrigger value="api">API Settings</TabsTrigger>
-            <TabsTrigger value="metadata">Metadata Settings</TabsTrigger>
-            <TabsTrigger value="userprofile">User Profile</TabsTrigger>
-          </TabsList>
+    <div className="flex flex-col items-center justify-center h-full p-2  text-white">
+      <div className="flex flex-col items-center gap-8 w-full">
+        {/* Provider Selection - Removed OpenAI */}
+        <Select
+          value={settings.provider}
+          onValueChange={(value) =>
+            setSettings({ ...settings, provider: value, model: "" })
+          }
+        >
+          <SelectTrigger className="w-full border-background/20">
+            <SelectValue placeholder="Select Provider" />
+          </SelectTrigger>{" "}
+          <SelectContent className="bg-black text-gray-400 border-background/20">
+            <SelectItem value="MistralAI">Mistral AI</SelectItem>
+            <SelectItem value="Google">Google</SelectItem>
+            <SelectItem value="Groq">Groq</SelectItem>
+          </SelectContent>
+        </Select>
 
-          <TabsContent value="api" className="mt-6">
-            <div className="flex flex-col items-center gap-6">
-              
+        {/* Model Selection - Removed OpenAI models */}
+        <Select
+          value={settings.model}
+          onValueChange={(value) => setSettings({ ...settings, model: value })}
+        >
+          <SelectTrigger className="w-full border-background/20">
+            <SelectValue placeholder="Select Model" />
+          </SelectTrigger>
+          <SelectContent className="bg-black text-gray-400 border-background/20">
+            {settings.provider === "MistralAI" && (
+              <>
+                <SelectItem value="pixtral-12b-2409">Pixtral 12b</SelectItem>
+                <SelectItem value="pixtral-large-2411">
+                  Pixtral Large
+                </SelectItem>
+              </>
+            )}{" "}
+            {settings.provider === "Google" && (
+              <>
+                <SelectItem value="gemini-2.0-flash-lite">
+                  Gemini 2.0 Flash Lite
+                </SelectItem>
+                <SelectItem value="gemini-2.0-flash">
+                  Gemini 2.0 Flash
+                </SelectItem>
+              </>
+            )}
+            {settings.provider === "Groq" && (
+              <>
+                <SelectItem value="meta-llama/llama-4-scout-17b-16e-instruct">
+                  Llama 4 Scout
+                </SelectItem>
+                <SelectItem value="meta-llama/llama-4-maverick-17b-128e-instruct">
+                  Llama 4 Maverick
+                </SelectItem>
+              </>
+            )}
+          </SelectContent>
+        </Select>
 
-              {/* Provider Selection - Removed OpenAI */}
-              <Select
-                value={settings.provider}
-                onValueChange={(value) =>
-                  setSettings({ ...settings, provider: value, model: "" })
-                }
-              >
-                <SelectTrigger className="w-80 border-background/20">
-                  <SelectValue placeholder="Select Provider" />
-                </SelectTrigger>{" "}
-                <SelectContent className="bg-black text-gray-400 border-background/20">
-                  <SelectItem value="MistralAI">Mistral AI</SelectItem>
-                  <SelectItem value="Google">Google</SelectItem>
-                  <SelectItem value="Groq">Groq</SelectItem>
-                </SelectContent>
-              </Select>
+        {/* API Key Input */}
+        <div className="w-full">
+          <Input
+            className="border-background/20"
+            type="password"
+            placeholder="Enter API Key"
+            value={settings.apiKey}
+            onChange={(e) =>
+              setSettings({ ...settings, apiKey: e.target.value })
+            }
+          />
+        </div>
 
-              {/* Model Selection - Removed OpenAI models */}
-              <Select
-                value={settings.model}
-                onValueChange={(value) =>
-                  setSettings({ ...settings, model: value })
-                }
-              >
-                <SelectTrigger className="w-80 border-background/20">
-                  <SelectValue placeholder="Select Model" />
-                </SelectTrigger>
-                <SelectContent className="bg-black text-gray-400 border-background/20">
-                  {settings.provider === "MistralAI" && (
-                    <>
-                      <SelectItem value="pixtral-12b-2409">
-                        Pixtral 12b
-                      </SelectItem>
-                      <SelectItem value="pixtral-large-2411">
-                        Pixtral Large
-                      </SelectItem>
-                    </>
-                  )}{" "}
-                  {settings.provider === "Google" && (
-                    <>
-                      <SelectItem value="gemini-2.0-flash-lite">
-                        Gemini 2.0 Flash Lite
-                      </SelectItem>
-                      <SelectItem value="gemini-2.0-flash">
-                        Gemini 2.0 Flash
-                      </SelectItem>
-                    </>
-                  )}
-                  {settings.provider === "Groq" && (
-                    <>
-                      <SelectItem value="meta-llama/llama-4-scout-17b-16e-instruct">
-                        Llama 4 Scout
-                      </SelectItem>
-                      <SelectItem value="meta-llama/llama-4-maverick-17b-128e-instruct">
-                        Llama 4 Maverick
-                      </SelectItem>
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
+        {/* Request Interval Input */}
+        <div className="w-full">
+          <Input
+            className="border-background/20"
+            type="number"
+            placeholder="Request interval (seconds)"
+            value={settings.requestInterval}
+            onChange={(e) =>
+              setSettings({
+                ...settings,
+                requestInterval: Number(e.target.value),
+              })
+            }
+          />
+        </div>
 
-              {/* API Key Input */}
-              <div className="w-80">
-                <Input
-                  className="border-background/20"
-                  type="password"
-                  placeholder="Enter API Key"
-                  value={settings.apiKey}
-                  onChange={(e) =>
-                    setSettings({ ...settings, apiKey: e.target.value })
-                  }
-                />
-              </div>
+        {/* Buttons */}
+        <div className="flex justify-between w-full gap-4">
+          <Button
+            className="flex-1"
+            onClick={async () => {
+              await handleSave();
+              onClose?.();
+            }}
+          >
+            Save & Close
+          </Button>
+          <Button variant="outline" className="flex-1" onClick={handleClear}>
+            Clear
+          </Button>
+        </div>
 
-              {/* Request Interval Input */}
-              <div className="w-80">
-                <Input
-                  className="border-background/20"
-                  type="number"
-                  placeholder="Request interval (seconds)"
-                  value={settings.requestInterval}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      requestInterval: Number(e.target.value),
-                    })
-                  }
-                />
-              </div>
-
-              {/* Buttons */}
-              <div className="flex justify-between w-80 gap-4">
-                <Button
-                  className="flex-1"
-                  onClick={async () => {
-                    await handleSave();
-                    onClose?.();
-                  }}
-                >
-                  Save & Close
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={handleClear}
-                >
-                  Clear
-                </Button>
-              </div>
-
-              {/* Info Text */}
-              <h4 className="text-center mt-4 text-sm text-gray-500">
-                <span className="font-semibold text-orange-400">
-                  Note: OpenAI is currently not supported. Because it's a
-                  closedAI.
-                </span>
-              </h4>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="metadata">
-            <MatadataSettings />
-          </TabsContent>
-
-
-        </Tabs>
+        {/* Info Text */}
+        <h4 className="text-center mt-4 text-sm text-gray-500">
+          <span className="font-semibold text-orange-400">
+            Note: OpenAI is currently not supported. Because it's a closedAI.
+          </span>
+        </h4>
       </div>
     </div>
   );

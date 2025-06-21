@@ -7,7 +7,7 @@ export function getPreloadPath() {
     return path.join(app.getAppPath(), '/dist-electron/preload.cjs');
   } else {
     // In production, look for the preload script in the resources directory
-    return path.join(app.getAppPath(), '../preload.cjs');
+    return path.join(app.getAppPath(), '../dist-electron/preload.cjs');
   }
 }
 

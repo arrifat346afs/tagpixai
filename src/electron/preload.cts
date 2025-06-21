@@ -74,6 +74,8 @@ contextBridge.exposeInMainWorld("electron", {
   onUnmaximized: (callback: () => void) => {
     unmaximizedCallback = callback;
   },
+  embedMetadata: (filePath: string, metadata: any) =>
+    ipcRenderer.invoke('embed-metadata', filePath, metadata),
   // Model usage API
   sendModelUsage: (data: { modelName: string; imageCount: number; date?: string }) =>
     ipcRenderer.invoke('send-model-usage', data),

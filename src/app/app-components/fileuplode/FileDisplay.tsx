@@ -10,7 +10,7 @@ import { X, ImageIcon } from "lucide-react"
 import scrollIntoView from "scroll-into-view-if-needed"
 import { MdOutlineImageNotSupported } from "react-icons/md"
 // import "../css/index.css"
-import "../css/Thumbnal.css"
+
 
 interface ThumbnailData {
   path: string
@@ -272,7 +272,7 @@ function FileDisplay() {
                   <div
                     onClick={() => handleFileSelect(item.path)}
                     className={cn(
-                      "group relative w-55 h-[17vh]",
+                      "group relative w-[26vh] h-[17vh]",
                       "rounded-md overflow-hidden",
                       "border-2", // Make border slightly thicker
                       {
@@ -356,13 +356,13 @@ function FileDisplay() {
                         "transition-opacity duration-200",
                       )}
                     >
-                      <p className="text-xs text-white truncate">{item.path.split("\\").pop()}</p>
+                      <p className="text-xs text-white truncate">{item.path.split("/").pop()}</p>
                     </div>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="bg-background/5 text-5xl flex items-center justify-center h-[17vh] min-w-[200px] rounded-md border">
+              <div className="bg-background/5 text-5xl flex items-center justify-center w-[26vh] h-[17vh] rounded-md border">
                 <MdOutlineImageNotSupported />
               </div>
             )}

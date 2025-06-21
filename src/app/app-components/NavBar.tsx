@@ -13,13 +13,14 @@ import {
 } from "react-icons/vsc";
 import { useState, useEffect, useCallback } from "react";
 import { IoSettings, IoSettingsOutline } from "react-icons/io5";
-import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+// import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import ApiSettings from "./settings/ApiSettings";
+// import ApiSettings from "./settings/Settings";
+import Settings from "./settings/Settings";
 
 interface NavBarProps {
   showLeft: boolean;
@@ -102,8 +103,8 @@ const NavBar = ({
               {showSettings ? <IoSettings /> : <IoSettingsOutline />}
             </button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl h-[80vh] bg-background">
-            <ApiSettings onClose={() => setShowSettings(false)} />
+          <DialogContent className="max-w-4xl h-150 bg-background">
+            <Settings />
           </DialogContent>
         </Dialog>
       </div>

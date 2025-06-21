@@ -64,6 +64,12 @@ declare global {
       }>;
       clearModelUsage: () => Promise<{ success: boolean; error?: string }>;
     };
+        embedMetadata: (filePath: string, metadata: {
+      title: string;
+      description: string;
+      keywords: string[];
+    }) => Promise<{ success: boolean; error?: string }>;
+  
   }
 }
 

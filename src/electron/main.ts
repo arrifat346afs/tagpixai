@@ -18,38 +18,41 @@ export async function loadSharp(): Promise<typeof sharp> {
     console.log("Dynamically loading Sharp module");
     try {
       if (app.isPackaged) {
-        // In production, try multiple possible paths for Sharp
-        const possiblePaths = [
+        const platform = process.platform;
+        // const arch = process.arch;
+        const resourcesPath = process.resourcesPath;
+        const appPath = app.getAppPath();
+
+        // Build possible paths based on platform/arch
+        let possiblePaths: string[] = [
           // Standard path in app.asar.unpacked
-          path.join(
-            process.resourcesPath,
-            "app.asar.unpacked",
-            "node_modules",
-            "sharp"
-          ),
-          // Alternative path sometimes used by electron-builder
-          path.join(
-            process.resourcesPath,
-            "app.asar.unpacked",
-            "node_modules",
-            "@img",
-            "sharp-win32-x64"
-          ),
-          // Try the direct path to the platform-specific module
-          path.join(
-            process.resourcesPath,
-            "app.asar.unpacked",
-            "node_modules",
-            "@img",
-            "sharp-win32-x64",
-            "build",
-            "Release"
-          ),
-          // Try the root node_modules path
-          path.join(process.resourcesPath, "node_modules", "sharp"),
-          // Try the app path
-          path.join(app.getAppPath(), "node_modules", "sharp"),
+          path.join(resourcesPath, "app.asar.unpacked", "node_modules", "sharp"),
+          // Root node_modules (sometimes used)
+          path.join(resourcesPath, "node_modules", "sharp"),
+          path.join(appPath, "node_modules", "sharp"),
         ];
+
+        // Add platform-specific paths
+        if (platform === "win32") {
+          possiblePaths = [
+            ...possiblePaths,
+            path.join(resourcesPath, "app.asar.unpacked", "node_modules", "@img", "sharp-win32-x64"),
+            path.join(resourcesPath, "app.asar.unpacked", "node_modules", "@img", "sharp-win32-x64", "build", "Release"),
+          ];
+        } else if (platform === "darwin") {
+          possiblePaths = [
+            ...possiblePaths,
+            path.join(resourcesPath, "app.asar.unpacked", "node_modules", "@img", "sharp-darwin-x64"),
+            path.join(resourcesPath, "app.asar.unpacked", "node_modules", "@img", "sharp-darwin-arm64"),
+          ];
+        } else if (platform === "linux") {
+          // For AppImage, the standard unpacked path should work
+          possiblePaths = [
+            ...possiblePaths,
+            path.join(resourcesPath, "app.asar.unpacked", "node_modules", "@img", `sharp-linux-x64`),
+            path.join(resourcesPath, "node_modules", "@img", `sharp-linux-x64`),
+          ];
+        }
 
         console.log("Searching for Sharp module in the following locations:");
         possiblePaths.forEach((p) => console.log(` - ${p}`));
@@ -57,7 +60,6 @@ export async function loadSharp(): Promise<typeof sharp> {
         let moduleLoaded = false;
         let lastError = null;
 
-        // Try each path until we find one that works
         for (const modulePath of possiblePaths) {
           try {
             console.log(`Attempting to load Sharp from: ${modulePath}`);
@@ -73,7 +75,7 @@ export async function loadSharp(): Promise<typeof sharp> {
         }
 
         if (!moduleLoaded) {
-          // If all paths failed, try the direct import as a last resort
+          // Try direct import as last resort
           try {
             console.log("Attempting direct import of Sharp as last resort");
             const module = await import("sharp");

@@ -4,6 +4,7 @@ import { generateThumbnail } from "../Thumbnail/generateThumbnail.js";
 import { getMimeType, store, tempCategoryStore } from "../main.js";
 import fs from "fs/promises";
 import path from "path";
+import { embedMetadata } from '../metadata/embedMetadata.js';
 import { resizeImageForAI } from "../resizeImage/resizeImageForAI.js";
 // import fetch from "node-fetch";
 import * as dotenv from 'dotenv';
@@ -209,87 +210,14 @@ ipcMain.handle("get-temp-categories", async (_, filePath: string) => {
   return categories[filePath] || null;
 });
 
-// // Model usage API handlers
-// // Store key for model usage data
-// const MODEL_USAGE_STORE_KEY = 'modelUsage';
 
-// // API URLs
-// // const DEV_API_URL = 'http://localhost:3000/api/model-usage';
-// // Production URL - this should be updated with the actual production URL when deployed
-// const PROD_API_URL = `${process.env.VITE_BASE_URL}/api/model-usage`;
-
-// // Get the appropriate API URL based on environment
-
-
-// // Handler to send model usage data
-// ipcMain.handle('send-model-usage', async (_, data: { modelName: string; imageCount: number; date?: string }) => {
-//   try {
-//     // Add timestamp if not provided
-//     if (!data.date) {
-//       data.date = new Date().toISOString();
-//     }
-
-//     // Save to local store
-//     const usageData = store.get(MODEL_USAGE_STORE_KEY) as Array<{ modelName: string; imageCount: number; date?: string }> || [];
-//     usageData.push(data);
-//     store.set(MODEL_USAGE_STORE_KEY, usageData);
-
-//    // Send to external API
-//    let apiUrl = PROD_API_URL;
-//    if (!process.env.VITE_BASE_URL) {
-//      console.error('VITE_BASE_URL is not defined in the environment.');
-//      return { success: false, error: 'VITE_BASE_URL is not defined' };
-//    }
-
-//    const response = await fetch(apiUrl, {
-//      method: 'POST',
-//      headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify(data),
-//     });
-
-//     if (!response.ok) {
-//       throw new Error(`API error: ${response.status} ${response.statusText}`);
-//     }
-
-//     const result = await response.json();
-//     return { success: true, data: result };
-//   } catch (error) {
-//     console.error('Error sending model usage data:', error);
-//     return {
-//      success: false,
-//      error: error instanceof Error ? error.message : 'Unknown error',
-//      stack: error instanceof Error ? error.stack : undefined,
-//    };
-//  }
-// });
-
-// // Handler to get all model usage data
-// ipcMain.handle('get-model-usage', async () => {
-//   try {
-//     const usageData = store.get(MODEL_USAGE_STORE_KEY) as Array<{ modelName: string; imageCount: number; date?: string }> || [];
-//     return { success: true, data: usageData };
-//   } catch (error) {
-//     console.error('Error getting model usage data:', error);
-//     return {
-//       success: false,
-//       error: error instanceof Error ? error.message : 'Unknown error'
-//     };
-//   }
-// });
-
-// // Handler to clear all model usage data
-// ipcMain.handle('clear-model-usage', async () => {
-//   try {
-//     store.delete(MODEL_USAGE_STORE_KEY);
-//     return { success: true };
-//   } catch (error) {
-//     console.error('Error clearing model usage data:', error);
-//     return {
-//       success: false,
-//       error: error instanceof Error ? error.message : 'Unknown error'
-//     };
-//   }
-// });
+ipcMain.handle('embed-metadata', async (_, filePath: string, metadata: any) => {
+  try {
+    await embedMetadata(filePath, metadata);
+    return { success: true };
+  } catch (error) {
+    console.error('Error embedding metadata:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+});
 

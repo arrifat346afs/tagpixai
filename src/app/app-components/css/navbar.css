@@ -1,6 +1,5 @@
 .nav-bar {
   -webkit-app-region: drag;
-  -webkit-user-select: none;
 }
 .nav-bar button,
 .nav-bar a,

@@ -1,79 +1,16 @@
 {
-    "appId": "com.tagpix-ai.electron",
-    "productName": "TagPix AI",
-    "files": [
-      "dist-electron/**/*",
-      "dist-react/**/*",
-      "package.json",
-      "node_modules/**/*",
-      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
-      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
-      "!**/node_modules/*.d.ts",
-      "!**/node_modules/.bin",
-      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
-      "!.editorconfig",
-      "!**/._*",
-      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
-      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
-      "!**/locales/*.pak",
-      "!**/chrome_*.pak",
-      "!**/{LICENSE.*,license.*,License.*}",
-      "!**/{LICENSES.*,licenses.*,Licenses.*}",
-      "!**/default_app.asar"
-    ],
-    "directories": {
-      "output": "dist",
-      "buildResources": "resources"
-    },
-    "extraResources": [
-      {
-        "from": "dist-electron/preload.cjs",
-        "to": "preload.cjs"
-      }
-    ],
-    "asar": {
-      "smartUnpack": true
-    },
-    "asarUnpack": [
-      "node_modules/@img/sharp-win32-x64/**/*",
-      "node_modules/sharp/**/*",
-      "node_modules/ffmpeg-static/**/*",
-      "node_modules/color/**/*",
-      "node_modules/color-string/**/*",
-      "node_modules/color-convert/**/*",
-      "node_modules/color-name/**/*",
-      "node_modules/detect-libc/**/*",
-      "node_modules/semver/**/*"
-    ],
-    "electronLanguages": ["en-US"],
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": ["x64"]
-        }
-      ],
-      "icon": "build/TagpixAi3.ico"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "TagPix AI",
-      "uninstallDisplayName": "TagPix AI",
-      "deleteAppDataOnUninstall": true,
-      "differentialPackage": true
-    },
-    "mac": {
-      "icon": "build/TagpixAi3.icns"
-    },
-    "linux": {
-      "icon": "build/TagpixAi3.png"
-    },
-    "buildDependenciesFromSource": false,
-    "nodeGypRebuild": false,
-    "removePackageScripts": true,
-    "removePackageKeywords": true,
-    "npmRebuild": false
+  "appId": "com.tagpix.ai",
+  "files": ["dist-electron", "dist-react"],
+  "extraResources": ["dist-electron/preload.cjs", "src/assets/**"],
+  "icon": "./TagpixAi3.png",
+  "mac": {
+    "target": "dmg"
+  },
+  "linux": {
+    "target": "AppImage",
+    "category": "Utility"
+  },
+  "win": {
+    "target": ["portable", "msi"]
+  }
 }
