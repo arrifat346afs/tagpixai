@@ -5,8 +5,8 @@
     "dist-electron/preload.cjs",
     "src/assets/**",
     {
-      "from": "node_modules/exiftool-vendored.*/**/*",
-      "to": "exiftool-vendored"
+      "from": "node_modules/exiftool-vendored.pl/bin",
+      "to": "exiftool-vendored/bin"
     }
   ],
   "asarUnpack": [
