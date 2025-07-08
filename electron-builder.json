@@ -27,7 +27,7 @@
       }
     ],
     "asarUnpack": [
-      "node_modules/exiftool-vendored/**/*",
+      "node_modules/exiftool-vendored.pl/bin",
       "node_modules/batch-cluster/**/*"
     ]
   },
