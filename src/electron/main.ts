@@ -8,6 +8,7 @@ import { isDev } from "./util.js";
 import { getPreloadPath } from "./pathResolver.js";
 import Store from "electron-store";
 import sharp from "sharp";
+import { cleanupExifTool } from "./metadata/embedMetadata.js";
 
 let sharpModule: typeof sharp | null = null;
 let ffmpegModule: typeof import("fluent-ffmpeg") | null = null;
@@ -39,7 +40,8 @@ export async function loadSharp(): Promise<typeof sharp> {
             path.join(resourcesPath, "app.asar.unpacked", "node_modules", "@img", "sharp-win32-x64"),
             path.join(resourcesPath, "app.asar.unpacked", "node_modules", "@img", "sharp-win32-x64", "build", "Release"),
           ];
-        } else if (platform === "darwin") {
+        } 
+        else if (platform === "darwin") {
           possiblePaths = [
             ...possiblePaths,
             path.join(resourcesPath, "app.asar.unpacked", "node_modules", "@img", "sharp-darwin-x64"),
@@ -263,6 +265,9 @@ app.on("before-quit", () => {
 // Clean up temp files when app closes
 app.on("will-quit", () => {
   try {
+    // Clean up ExifTool processes
+    cleanupExifTool();
+
     // Clean up temp metadata directory
     if (existsSync(tempMetadataDir)) {
       rmSync(tempMetadataDir, { recursive: true, force: true });
@@ -292,6 +297,7 @@ app.on("will-quit", () => {
 // Prevent window from being garbage collected
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
+    cleanupExifTool();
     app.quit();
   }
 });

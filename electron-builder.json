@@ -1,14 +1,35 @@
 {
   "appId": "com.tagpix.ai",
   "files": ["dist-electron", "dist-react"],
-  "extraResources": ["dist-electron/preload.cjs", "src/assets/**"],
+  "extraResources": [
+    "dist-electron/preload.cjs",
+    "src/assets/**",
+    {
+      "from": "node_modules/exiftool-vendored.*/**/*",
+      "to": "exiftool-vendored"
+    }
+  ],
+  "asarUnpack": [
+    "node_modules/exiftool-vendored/**/*",
+    "node_modules/batch-cluster/**/*"
+  ],
   "icon": "./TagpixAi3.png",
   "mac": {
     "target": "dmg"
   },
   "linux": {
     "target": "AppImage",
-    "category": "Utility"
+    "category": "Utility",
+    "extraResources": [
+      {
+        "from": "node_modules/exiftool-vendored.pl/bin",
+        "to": "exiftool-vendored/bin"
+      }
+    ],
+    "asarUnpack": [
+      "node_modules/exiftool-vendored/**/*",
+      "node_modules/batch-cluster/**/*"
+    ]
   },
   "win": {
     "target": ["portable", "msi"]

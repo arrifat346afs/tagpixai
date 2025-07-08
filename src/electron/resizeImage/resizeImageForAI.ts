@@ -72,7 +72,7 @@ export async function resizeImageForAI(filePath: string): Promise<string> {
           background: { r: 255, g: 255, b: 255, alpha: 1 },
         })
         .jpeg({
-          quality: 70,
+          quality: 50,
           mozjpeg: true,
           chromaSubsampling: "4:2:0",
         })

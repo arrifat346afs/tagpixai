@@ -13,7 +13,6 @@ export class LangChainService {
       this.model = new ChatGoogleGenerativeAI({
         apiKey: settings.api.apiKey,
         model: settings.api.model,
-        maxOutputTokens: 2048,
       });
     } else {
       this.model = new ChatMistralAI({

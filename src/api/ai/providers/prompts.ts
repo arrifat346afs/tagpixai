@@ -11,17 +11,24 @@ const prompts = (settings: ProcessingSettings) => {
     ? "Include specific place names and locations where relevant."
     : "Do not include specific place names or locations.";
 
-  return `Please analyze this image and provide the following:
+  return `You are an expert in generating SEO-optimized metadata for images.
 
-1. Title (Exact ${basePrompt.titleLimit} chars):
-   - Focus on [Main Subject] [Descriptive Detail] [Engaging Hook]
+  Based on the image, generate a title, a list of keywords, a description, the image type, and the image style.
+
+1. Title :
+   - The title must be approximately ${basePrompt.titleLimit} characters
+    - Include the image style in the title
+   - Write only the title and don't include any other text
+   - Avoid using colons (:) or any special characters in the title
    - ${placeNameInstruction}
 
-2. Description (Exact ${basePrompt.descLimit} chars):
+2. Description:
+   - The description must be approximately (Exact ${basePrompt.descLimit} characters)
+   - Write only the description and don't include any other text
    - ${placeNameInstruction}
 
-3. Keywords (Exact ${basePrompt.keywordLimit}):
-   - Relevant, comma-separated terms
+3. Keywords:
+   - The keywords must be approximately (Exact ${basePrompt.keywordLimit} keywords)
    - ${placeNameInstruction}
 
 Format response exactly as:
