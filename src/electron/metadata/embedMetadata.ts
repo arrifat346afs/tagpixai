@@ -1,6 +1,7 @@
 import { ExifTool } from 'exiftool-vendored';
 import path from 'path';
 import { app } from 'electron';
+import fs from 'fs';
 
 interface MetadataToEmbed {
   title: string;
@@ -21,16 +22,27 @@ function getExifToolPath(): string | undefined {
       path.join(resourcesPath, 'app.asar.unpacked', 'node_modules', 'exiftool-vendored.pl', 'bin', 'exiftool'),
       // Another alternative
       path.join(resourcesPath, 'node_modules', 'exiftool-vendored.pl', 'bin', 'exiftool'),
+      // AppImage specific paths
+      path.join(resourcesPath, 'app', 'node_modules', 'exiftool-vendored.pl', 'bin', 'exiftool'),
+      path.join(process.cwd(), 'resources', 'app.asar.unpacked', 'node_modules', 'exiftool-vendored.pl', 'bin', 'exiftool'),
     ];
 
     console.log('Searching for ExifTool binary in:', possiblePaths);
+    console.log('Process resourcesPath:', resourcesPath);
+    console.log('Process cwd:', process.cwd());
 
     for (const exiftoolPath of possiblePaths) {
       try {
-        const fs = require('fs');
         if (fs.existsSync(exiftoolPath)) {
           console.log('Found ExifTool binary at:', exiftoolPath);
-          return exiftoolPath;
+          // Check if the binary is executable
+          try {
+            fs.accessSync(exiftoolPath, fs.constants.X_OK);
+            console.log('ExifTool binary is executable');
+            return exiftoolPath;
+          } catch (execError) {
+            console.log('ExifTool binary found but not executable:', execError);
+          }
         }
       } catch (error) {
         console.log('Error checking path:', exiftoolPath, error);
@@ -48,10 +60,12 @@ function getExifTool(): ExifTool {
     const exiftoolPath = getExifToolPath();
 
     const config: any = {
-      taskTimeoutMillis: 30000, // 30 second timeout
+      taskTimeoutMillis: 60000, // Increased to 60 seconds for AppImage
       maxProcs: 1, // Use single process to avoid conflicts
-      spawnTimeoutMillis: 30000,
-      maxTasksPerProcess: 500, // Allow more tasks per process
+      spawnTimeoutMillis: 60000, // Increased spawn timeout
+      maxTasksPerProcess: 100, // Reduced for better stability in AppImage
+      maxReusedProcs: 1, // Limit process reuse
+      spawnArgs: ['-stay_open', 'True', '-@', '-'], // Explicit spawn args
     };
 
     if (exiftoolPath) {
@@ -64,12 +78,40 @@ function getExifTool(): ExifTool {
   return exiftoolInstance;
 }
 
+// Health check function to verify ExifTool is working
+async function checkExifToolHealth(): Promise<boolean> {
+  try {
+    const exiftool = getExifTool();
+    // Try to get version info as a health check
+    const version = await exiftool.version();
+    console.log('ExifTool health check passed, version:', version);
+    return true;
+  } catch (error) {
+    console.error('ExifTool health check failed:', error);
+    // Clean up the failed instance
+    cleanupExifTool();
+    return false;
+  }
+}
+
 export async function embedMetadata(filePath: string, metadata: MetadataToEmbed): Promise<void> {
   let retryCount = 0;
   const maxRetries = 3;
 
   while (retryCount < maxRetries) {
     try {
+      // Force recreation of ExifTool instance on retry to avoid stuck processes
+      if (retryCount > 0) {
+        console.log(`Retry ${retryCount}: Recreating ExifTool instance`);
+        cleanupExifTool();
+      }
+
+      // Perform health check before attempting to embed metadata
+      const isHealthy = await checkExifToolHealth();
+      if (!isHealthy) {
+        throw new Error('ExifTool health check failed - binary may not be available or working properly');
+      }
+
       const exiftool = getExifTool();
 
       // Clean up the title and description by removing any lang prefix and normalizing whitespace

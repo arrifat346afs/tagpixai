@@ -92,7 +92,7 @@ const ProgressBar = ({ visible = false }: ProgressBarProps) => {
         hasStartedProcessing.current = true;
         setStatus(newStatus);
         
-        if (newStatus.total > 0) {
+       if (newStatus.total > 0) {
           const progressValue = ((newStatus.completed + newStatus.failed) / newStatus.total) * 100;
           setProgress(progressValue);
         } else {

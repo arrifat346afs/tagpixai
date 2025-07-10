@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { BrowserWindow, dialog } from "electron";
+import { BrowserWindow, dialog, app } from "electron";
 import { generateThumbnail } from "../Thumbnail/generateThumbnail.js";
 import { getMimeType, store, tempCategoryStore } from "../main.js";
 import fs from "fs/promises";
@@ -213,11 +213,36 @@ ipcMain.handle("get-temp-categories", async (_, filePath: string) => {
 
 ipcMain.handle('embed-metadata', async (_, filePath: string, metadata: any) => {
   try {
-    await embedMetadata(filePath, metadata);
+    console.log(`Starting metadata embedding for: ${filePath}`);
+    console.log('Metadata to embed:', metadata);
+    console.log('App is packaged:', app.isPackaged);
+    console.log('Process resourcesPath:', process.resourcesPath);
+    console.log('Process platform:', process.platform);
+
+    // Add a timeout wrapper to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Metadata embedding timed out after 90 seconds')), 90000);
+    });
+
+    const embedPromise = embedMetadata(filePath, metadata);
+
+    // Race between the embed operation and timeout
+    await Promise.race([embedPromise, timeoutPromise]);
+
+    console.log(`Successfully embedded metadata for: ${filePath}`);
     return { success: true };
   } catch (error) {
     console.error('Error embedding metadata:', error);
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`Failed to embed metadata for ${filePath}: ${errorMessage}`);
+
+    // Log additional debugging info for AppImage issues
+    if (errorMessage.includes('spawn') || errorMessage.includes('ENOENT') || errorMessage.includes('timeout')) {
+      console.error('This appears to be an ExifTool binary or process issue');
+      console.error('Check if ExifTool is properly bundled in the AppImage');
+    }
+
+    return { success: false, error: errorMessage };
   }
 });
 

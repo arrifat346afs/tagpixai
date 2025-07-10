@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs/promises";
 import { generateThumbnail } from "../Thumbnail/generateThumbnail.js";
-import { loadSharp } from "../main.js";
+import { loadImageScript } from "../main.js";
 import { existsSync } from "fs";
 
 // Fallback image processing using Node.js built-in modules
@@ -54,34 +54,47 @@ export async function resizeImageForAI(filePath: string): Promise<string> {
 
   // Handle images
   try {
-    // Try to use Sharp first
+    // Try to use ImageScript first
     try {
-      // Dynamically load Sharp
-      const Sharp = await loadSharp();
+      // Dynamically load ImageScript
+      const ImageScript = await loadImageScript();
 
-      const metadata = await Sharp(filePath).metadata();
+      // Read the image file
+      const imageBuffer = await fs.readFile(filePath);
+
+      // Decode the image
+      const image = await ImageScript.decode(imageBuffer);
+
       console.log(
-        `Processing image with Sharp: ${path.basename(filePath)} (${metadata.width}x${
-          metadata.height
-        })`
+        `Processing image with ImageScript: ${path.basename(filePath)} (${image.width}x${image.height})`
       );
 
-      const buffer = await Sharp(filePath)
-        .resize(256, 256, {
-          fit: "contain",
-          background: { r: 255, g: 255, b: 255, alpha: 1 },
-        })
-        .jpeg({
-          quality: 50,
-          mozjpeg: true,
-          chromaSubsampling: "4:2:0",
-        })
-        .toBuffer();
+      // Calculate dimensions to maintain aspect ratio within 256x256
+      const maxSize = 256;
+      let newWidth = image.width;
+      let newHeight = image.height;
 
-      return buffer.toString("base64");
-    } catch (sharpError) {
-      // If Sharp fails, log the error and use fallback
-      console.error("Sharp processing failed, using fallback:", sharpError);
+      if (newWidth > maxSize || newHeight > maxSize) {
+        const aspectRatio = newWidth / newHeight;
+        if (newWidth > newHeight) {
+          newWidth = maxSize;
+          newHeight = Math.round(maxSize / aspectRatio);
+        } else {
+          newHeight = maxSize;
+          newWidth = Math.round(maxSize * aspectRatio);
+        }
+      }
+
+      // Resize the image
+      const resizedImage = image.resize(newWidth, newHeight);
+
+      // Encode as JPEG with quality 50
+      const jpegBuffer = await resizedImage.encodeJPEG(50);
+
+      return Buffer.from(jpegBuffer).toString("base64");
+    } catch (imageScriptError) {
+      // If ImageScript fails, log the error and use fallback
+      console.error("ImageScript processing failed, using fallback:", imageScriptError);
       return await fallbackImageProcessing(filePath);
     }
   } catch (error) {

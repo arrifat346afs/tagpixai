@@ -2,7 +2,7 @@ import fs from "fs/promises";
 import { app } from "electron";
 import { existsSync, mkdirSync } from "fs";
 import path from "path";
-import { loadFfmpeg, loadSharp } from '../main.js';
+import { loadFfmpeg, loadImageScript } from '../main.js';
 
 
 
@@ -71,21 +71,39 @@ export async function generateThumbnail(
     try {
       if (!existsSync(thumbnailPath)) {
         try {
-          // Try to use Sharp first
-          const Sharp = await loadSharp();
+          // Try to use ImageScript first
+          const ImageScript = await loadImageScript();
 
-          await Sharp(filePath)
-            .resize(undefined, 256, {
-              fit: "inside",
-              withoutEnlargement: true,
-            })
-            .png() // Change to PNG format to preserve transparency
-            .toFile(thumbnailPath);
+          // Read the image file
+          const imageBuffer = await fs.readFile(filePath);
 
-          console.log("Successfully generated thumbnail with Sharp");
-        } catch (sharpError) {
-          // Fallback to a simple file copy if Sharp fails
-          console.error("Sharp thumbnail generation failed, using fallback:", sharpError);
+          // Decode the image
+          const image = await ImageScript.decode(imageBuffer);
+
+          // Calculate dimensions to maintain aspect ratio within 256px height
+          const maxHeight = 256;
+          let newWidth = image.width;
+          let newHeight = image.height;
+
+          if (newHeight > maxHeight) {
+            const aspectRatio = newWidth / newHeight;
+            newHeight = maxHeight;
+            newWidth = Math.round(maxHeight * aspectRatio);
+          }
+
+          // Resize the image
+          const resizedImage = image.resize(newWidth, newHeight);
+
+          // Encode as PNG to preserve transparency
+          const pngBuffer = await resizedImage.encode();
+
+          // Write to thumbnail path
+          await fs.writeFile(thumbnailPath, pngBuffer);
+
+          console.log("Successfully generated thumbnail with ImageScript");
+        } catch (imageScriptError) {
+          // Fallback to a simple file copy if ImageScript fails
+          console.error("ImageScript thumbnail generation failed, using fallback:", imageScriptError);
 
           try {
             // Read the original file

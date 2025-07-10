@@ -55,16 +55,26 @@ const GenerateButton = () => {
         await window.electron.saveFileMetadata(result.filePath, metadata);
 
         // Embed metadata in the file
-      const embedResult = await window.electron.embedMetadata(result.filePath, {
-        title: metadata.title,
-        description: metadata.description,
-        keywords: metadata.keywords,
-      }) as { success: boolean; error?: string };
+        try {
+          const embedResult = await window.electron.embedMetadata(result.filePath, {
+            title: metadata.title,
+            description: metadata.description,
+            keywords: metadata.keywords,
+          }) as { success: boolean; error?: string };
 
-      if (!embedResult.success) {
-        console.error(`Failed to embed metadata: ${embedResult.error}`);
-        toast.error(`Failed to embed metadata in ${fileName}`);
-      }
+          if (!embedResult.success) {
+            console.error(`Failed to embed metadata: ${embedResult.error}`);
+            // Don't show error toast for ExifTool issues in AppImage - just log it
+            if (embedResult.error?.includes('ExifTool') || embedResult.error?.includes('timeout')) {
+              console.warn(`Metadata embedding skipped for ${fileName} due to ExifTool issue: ${embedResult.error}`);
+            } else {
+              toast.error(`Failed to embed metadata in ${fileName}`);
+            }
+          }
+        } catch (embedError) {
+          console.error(`Error during metadata embedding for ${fileName}:`, embedError);
+          // Don't fail the entire process if metadata embedding fails
+        }
 
         setTimeout(() => {
           scrollThumbnailIntoView(result.filePath);

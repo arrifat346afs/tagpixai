@@ -107,7 +107,7 @@ src/
 - Radix UI Components
 - Mistral AI Integration
 - Electron Store for persistence
-- Sharp for image processing
+- ImageScript for image processing
 
 ## Features
 

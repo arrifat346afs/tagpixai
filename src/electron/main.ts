@@ -7,114 +7,33 @@ import { existsSync, mkdirSync, rmSync } from "fs";
 import { isDev } from "./util.js";
 import { getPreloadPath } from "./pathResolver.js";
 import Store from "electron-store";
-import sharp from "sharp";
+import { Image } from "imagescript";
 import { cleanupExifTool } from "./metadata/embedMetadata.js";
 
-let sharpModule: typeof sharp | null = null;
+let imageScriptModule: typeof Image | null = null;
 let ffmpegModule: typeof import("fluent-ffmpeg") | null = null;
 
-// Function to dynamically load Sharp module
-export async function loadSharp(): Promise<typeof sharp> {
-  if (!sharpModule) {
-    console.log("Dynamically loading Sharp module");
+// Function to dynamically load ImageScript module
+export async function loadImageScript(): Promise<typeof Image> {
+  if (!imageScriptModule) {
+    console.log("Dynamically loading ImageScript module");
     try {
-      if (app.isPackaged) {
-        const platform = process.platform;
-        // const arch = process.arch;
-        const resourcesPath = process.resourcesPath;
-        const appPath = app.getAppPath();
-
-        // Build possible paths based on platform/arch
-        let possiblePaths: string[] = [
-          // Standard path in app.asar.unpacked
-          path.join(resourcesPath, "app.asar.unpacked", "node_modules", "sharp"),
-          // Root node_modules (sometimes used)
-          path.join(resourcesPath, "node_modules", "sharp"),
-          path.join(appPath, "node_modules", "sharp"),
-        ];
-
-        // Add platform-specific paths
-        if (platform === "win32") {
-          possiblePaths = [
-            ...possiblePaths,
-            path.join(resourcesPath, "app.asar.unpacked", "node_modules", "@img", "sharp-win32-x64"),
-            path.join(resourcesPath, "app.asar.unpacked", "node_modules", "@img", "sharp-win32-x64", "build", "Release"),
-          ];
-        } 
-        else if (platform === "darwin") {
-          possiblePaths = [
-            ...possiblePaths,
-            path.join(resourcesPath, "app.asar.unpacked", "node_modules", "@img", "sharp-darwin-x64"),
-            path.join(resourcesPath, "app.asar.unpacked", "node_modules", "@img", "sharp-darwin-arm64"),
-          ];
-        } else if (platform === "linux") {
-          // For AppImage, the standard unpacked path should work
-          possiblePaths = [
-            ...possiblePaths,
-            path.join(resourcesPath, "app.asar.unpacked", "node_modules", "@img", `sharp-linux-x64`),
-            path.join(resourcesPath, "node_modules", "@img", `sharp-linux-x64`),
-          ];
-        }
-
-        console.log("Searching for Sharp module in the following locations:");
-        possiblePaths.forEach((p) => console.log(` - ${p}`));
-
-        let moduleLoaded = false;
-        let lastError = null;
-
-        for (const modulePath of possiblePaths) {
-          try {
-            console.log(`Attempting to load Sharp from: ${modulePath}`);
-            const module = await import(modulePath);
-            sharpModule = module.default;
-            console.log("Successfully loaded Sharp module from:", modulePath);
-            moduleLoaded = true;
-            break;
-          } catch (err: any) {
-            console.log(`Failed to load from ${modulePath}:`, err.message);
-            lastError = err;
-          }
-        }
-
-        if (!moduleLoaded) {
-          // Try direct import as last resort
-          try {
-            console.log("Attempting direct import of Sharp as last resort");
-            const module = await import("sharp");
-            sharpModule = module.default;
-            console.log("Successfully loaded Sharp via direct import");
-            moduleLoaded = true;
-          } catch (err: any) {
-            console.error("Direct import also failed:", err.message);
-            lastError = err;
-          }
-        }
-
-        if (!moduleLoaded) {
-          throw (
-            lastError || new Error("All Sharp module loading attempts failed")
-          );
-        }
-      } else {
-        // In development, load normally
-        console.log("Loading Sharp in development mode");
-        const module = await import("sharp");
-        sharpModule = module.default;
-        console.log("Successfully loaded Sharp in development mode");
-      }
+      const module = await import("imagescript");
+      imageScriptModule = module.Image;
+      console.log("Successfully loaded ImageScript module");
     } catch (error: any) {
-      console.error("Error loading Sharp module:", error);
+      console.error("Error loading ImageScript module:", error);
       throw new Error(
-        `Failed to load Sharp module: ${error.message}. Please ensure Sharp is correctly installed.`
+        `Failed to load ImageScript module: ${error.message}. Please ensure ImageScript is correctly installed.`
       );
     }
   }
 
-  if (!sharpModule) {
-    throw new Error("Sharp module failed to initialize");
+  if (!imageScriptModule) {
+    throw new Error("ImageScript module failed to initialize");
   }
 
-  return sharpModule;
+  return imageScriptModule;
 }
 
 // Function to dynamically load ffmpeg module

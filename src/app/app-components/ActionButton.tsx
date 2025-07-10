@@ -1,7 +1,7 @@
 
 import { Separator } from "@/components/ui/separator"
 import Export from "./expoert/Export"
-import FileSelector from "./fileuplode/FileSeccletor"
+import FileSelector from "./fileupload/FileSeccletor"
 import GenerateButton from "./generate-button/GenerateButton"
 
 const ActionButton = () => {

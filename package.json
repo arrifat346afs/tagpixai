@@ -1,16 +1,12 @@
 {
-  "name": "tagpix-ai",
+  "name": "tagpixai",
   "private": true,
-  "version": "6.0.0",
+  "version": "6.0.1",
+  "productName": "TagPix AI",
   "type": "module",
   "main": "dist-electron/main.js",
   "description": " AI powered metadata generator",
   "author": "AR Rifat",
-  "sharp": {
-    "runtime": "electron",
-    "platform": "linux",
-    "arch": "x64"
-  },
   "scripts": {
     "dev": "npm-run-all --parallel dev:r dev:e",
     "dev:r": "vite",
@@ -20,17 +16,14 @@
     "preview": "vite preview",
     "transpile:electron": "tsc --project src/electron/tsconfig.json",
     "dist:mac": "npm run transpile:electron && npm run build && electron-builder --mac --arm64",
-    "dist:win": "npm run transpile:electron && npm run build && npm run rebuild-sharp && electron-builder --win --x64 --config electron-builder.json",
-    "dist:linux": "npm run transpile:electron && npm run build && npm run rebuild-sharp && electron-builder --linux --x64",
-    "rebuild": "electron-rebuild -f -w sharp",
-    "rebuild-sharp": "npm rebuild sharp --platform=linux --arch=x64 --runtime=electron --target=36.1.0 --dist-url=https://electronjs.org/headers",
-    "postinstall": "electron-builder install-app-deps && npm run rebuild-sharp"
+    "dist:win": "npm run transpile:electron && npm run build && electron-builder --win --x64 --config electron-builder.json",
+    "dist:linux": "npm run transpile:electron && npm run build && electron-builder --linux --x64 --config electron-builder.json",
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "@ai-sdk/google": "^1.2.14",
     "@ai-sdk/groq": "^1.2.8",
     "@ai-sdk/mistral": "^1.2.7",
-    "@clerk/clerk-react": "^5.31.4",
     "@emnapi/runtime": "^1.4.3",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.0.1",
@@ -60,7 +53,6 @@
     "node-fetch": "^2.7.0",
     "react-scroll-into-view": "^2.1.3",
     "scroll-into-view-if-needed": "^3.1.0",
-    "sharp": "^0.34.2",
     "sonner": "^2.0.3",
     "styled-components": "^6.1.18",
     "tailwind-merge": "^3.2.0",

@@ -9,6 +9,8 @@ import { toast } from "sonner"
 import { X, ImageIcon } from "lucide-react"
 import scrollIntoView from "scroll-into-view-if-needed"
 import { MdOutlineImageNotSupported } from "react-icons/md"
+import { batchProcessor } from "@/services/batch-processing/processor"
+// import { batchProcessor } from "./processor" // Add this import
 // import "../css/index.css"
 
 
@@ -19,8 +21,9 @@ interface ThumbnailData {
   isLoading: boolean
   loadingFailed: boolean
   retryCount: number
-  metadataStatus?: "complete" | "incomplete" | undefined
+  metadataStatus?: "complete" | "incomplete" | "failed" | "pending" | undefined
   generationFailed?: boolean
+  metadataAttempted?: boolean // Track if metadata generation was attempted
 }
 
 function FileDisplay() {
@@ -72,34 +75,155 @@ function FileDisplay() {
     }
   }
 
+  const checkMetadataStatus = async (file: string): Promise<"complete" | "incomplete" | "pending"> => {
+    try {
+      const metadata = await window.electron.getFileMetadata(file)
+      
+      if (!metadata) {
+        return "pending" // No metadata yet, but not necessarily failed
+      }
+
+      // Check if metadata is complete
+      const isIncomplete = !metadata.title || !metadata.description || !metadata.keywords?.length
+      return isIncomplete ? "incomplete" : "complete"
+    } catch (error) {
+      console.error("Failed to check metadata status:", error)
+      return "pending" // Default to pending on error
+    }
+  }
+
+  // Add method to update thumbnail status when processing completes
+  const updateThumbnailStatus = (filePath: string, success: boolean) => {
+    setThumbnails((prev) =>
+      prev.map((item) =>
+        item.path === filePath
+          ? {
+              ...item,
+              metadataStatus: success ? "complete" : "failed",
+              generationFailed: !success,
+              metadataAttempted: true, // Mark that generation was attempted
+            }
+          : item
+      )
+    )
+  }
+
+  // Add method to retry metadata generation for a specific file
+  const retryMetadataGeneration = async (filePath: string) => {
+    // Set loading state
+    setThumbnails((prev) =>
+      prev.map((item) =>
+        item.path === filePath
+          ? {
+              ...item,
+              metadataStatus: "pending",
+              generationFailed: false,
+              metadataAttempted: false,
+            }
+          : item
+      )
+    )
+
+    // Re-check metadata status
+    try {
+      const metadataStatus = await checkMetadataStatus(filePath)
+      setThumbnails((prev) =>
+        prev.map((item) =>
+          item.path === filePath
+            ? {
+                ...item,
+                metadataStatus,
+                generationFailed: false,
+                metadataAttempted: metadataStatus !== "pending",
+              }
+            : item
+        )
+      )
+    } catch (error) {
+      console.error("Failed to retry metadata check:", error)
+      setThumbnails((prev) =>
+        prev.map((item) =>
+          item.path === filePath
+            ? {
+                ...item,
+                metadataStatus: "pending",
+                generationFailed: false,
+                metadataAttempted: false,
+              }
+            : item
+        )
+      )
+    }
+  }
+
+  useEffect(() => {
+    // Subscribe to batch processor file completion events
+    const unsubscribe = batchProcessor.subscribeToFileComplete((result) => {
+      updateThumbnailStatus(result.filePath, result.success)
+      
+      // Also update the metadata status based on the result
+      if (result.success && result.metadata) {
+        const isIncomplete = !result.metadata.title || !result.metadata.description || !result.metadata.keywords?.length
+        setThumbnails((prev) =>
+          prev.map((item) =>
+            item.path === result.filePath
+              ? {
+                  ...item,
+                  metadataStatus: isIncomplete ? "incomplete" : "complete",
+                  generationFailed: false,
+                  metadataAttempted: true,
+                }
+              : item
+          )
+        )
+      } else {
+        // Mark as failed and attempted
+        setThumbnails((prev) =>
+          prev.map((item) =>
+            item.path === result.filePath
+              ? {
+                  ...item,
+                  metadataStatus: "failed",
+                  generationFailed: true,
+                  metadataAttempted: true,
+                }
+              : item
+          )
+        )
+      }
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [])
+
   useEffect(() => {
     const loadThumbnails = async () => {
-      const newThumbnails = await Promise.all(
-        selectedFiles.map(async (file) => {
-          const metadata = await window.electron.getFileMetadata(file)
-          const isIncomplete = metadata && (!metadata.title || !metadata.description || !metadata.keywords?.length)
-
-          return {
-            path: file,
-            thumbnailUrl: null,
-            isVideo: ["mp4", "mov", "avi", "mkv"].includes(file.split(".").pop()?.toLowerCase() || ""),
-            isLoading: true,
-            loadingFailed: false,
-            retryCount: 0,
-            metadataStatus: metadata ? (isIncomplete ? "incomplete" : "complete") : undefined,
-          } as ThumbnailData
-        }),
-      )
+      // Initialize thumbnails with loading state
+      const newThumbnails = selectedFiles.map((file) => ({
+        path: file,
+        thumbnailUrl: null,
+        isVideo: ["mp4", "mov", "avi", "mkv"].includes(file.split(".").pop()?.toLowerCase() || ""),
+        isLoading: true,
+        loadingFailed: false,
+        retryCount: 0,
+        metadataStatus: undefined,
+        generationFailed: false,
+        metadataAttempted: false, // Initially no metadata generation attempted
+      } as ThumbnailData))
 
       setThumbnails(newThumbnails)
 
-      // Process thumbnails in smaller batches
+      // Process thumbnails and metadata in smaller batches
       const BATCH_SIZE = 2
       for (let i = 0; i < selectedFiles.length; i += BATCH_SIZE) {
         const batch = selectedFiles.slice(i, i + BATCH_SIZE)
         await Promise.all(
           batch.map(async (file, batchIndex) => {
             const index = i + batchIndex
+            
+            // Load thumbnail
             try {
               const thumbnailData = await loadSingleThumbnail(file)
               setThumbnails((prev) =>
@@ -128,6 +252,37 @@ function FileDisplay() {
                 ),
               )
               toast.error(`Failed to load thumbnail for ${file.split("\\").pop()}`)
+            }
+
+            // Check metadata status
+            try {
+              const metadataStatus = await checkMetadataStatus(file)
+              setThumbnails((prev) =>
+                prev.map((item, idx) =>
+                  idx === index
+                    ? {
+                        ...item,
+                        metadataStatus,
+                        generationFailed: false, // Don't mark as failed on initial load
+                        metadataAttempted: metadataStatus !== "pending", // Only mark attempted if we found existing metadata
+                      }
+                    : item,
+                ),
+              )
+            } catch (error) {
+              console.error("Failed to check metadata:", error)
+              setThumbnails((prev) =>
+                prev.map((item, idx) =>
+                  idx === index
+                    ? {
+                        ...item,
+                        metadataStatus: "pending",
+                        generationFailed: false,
+                        metadataAttempted: false,
+                      }
+                    : item,
+                ),
+              )
             }
           }),
         )
@@ -253,6 +408,20 @@ function FileDisplay() {
     toast.success("File removed")
   }
 
+  const getBorderColor = (item: ThumbnailData) => {
+    if (selectedFile === item.path) {
+      // If selected, use primary color but with red tint if failed after attempt
+      return (item.generationFailed && item.metadataAttempted) ? "border-red-500" : "border-primary"
+    }
+    
+    // If not selected, use red only for failed attempts, default for others
+    if (item.generationFailed && item.metadataAttempted) {
+      return "border-red-500/70"
+    }
+    
+    return "border-zinc-800/50"
+  }
+
   return (
     <div className="w-full mx-auto select-none">
       {/* Custom scrolling container with styled scrollbar */}
@@ -275,10 +444,7 @@ function FileDisplay() {
                       "group relative w-[26vh] h-[17vh]",
                       "rounded-md overflow-hidden",
                       "border-2", // Make border slightly thicker
-                      {
-                        "border-primary": selectedFile === item.path,
-                        "border-zinc-800/50": selectedFile !== item.path,
-                      },
+                      getBorderColor(item),
                       "hover:border-accent-foreground",
                       "transition-all duration-200",
                       "cursor-pointer",
@@ -319,13 +485,30 @@ function FileDisplay() {
                     <div className="absolute top-1 left-1 flex gap-1 z-20">
                       {/* Incomplete metadata warning */}
                       {item.metadataStatus === "incomplete" && (
-                        <div className="bg-yellow-500/80 text-white text-xs px-2 py-1 rounded-full">!</div>
+                        <div className="bg-yellow-500/80 text-white text-xs px-2 py-1 rounded-full" title="Incomplete metadata">
+                          !
+                        </div>
                       )}
-                      {/* Generation failed indicator */}
-                      {item.generationFailed && (
-                        <div className="bg-red-500/80 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                          <span className="w-3 h-3">⚠️</span>
-                          <span>AI Failed</span>
+                      {/* Generation failed indicator with retry button - only show if attempted */}
+                      {item.generationFailed && item.metadataAttempted && (
+                        <div className="bg-red-500/80 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1" title="Metadata generation failed - Click to retry">
+                          <span className="text-xs">⚠</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              retryMetadataGeneration(item.path)
+                            }}
+                            className="hover:bg-red-600/80 px-1 rounded"
+                            title="Retry metadata generation"
+                          >
+                            ↻
+                          </button>
+                        </div>
+                      )}
+                      {/* Pending metadata indicator - show for files without metadata that haven't been processed */}
+                      {item.metadataStatus === "pending" && !item.metadataAttempted && (
+                        <div className="bg-gray-500/80 text-white text-xs px-2 py-1 rounded-full" title="Metadata not generated yet">
+                          ...
                         </div>
                       )}
                     </div>

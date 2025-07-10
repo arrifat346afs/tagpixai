@@ -8,7 +8,7 @@ import MatadataSettings from "./settings/MatadataSettings";
 import FilePreview from "./FilePreview";
 import MetadataInput from "./MetadataInput";
 import ActionButton from "./ActionButton";
-import FileDisplay from "./fileuplode/FileDisplay";
+import FileDisplay from "./fileupload/FileDisplay";
 import ProgressBar from "./ProgressBar";
 import { Toaster } from "@/components/ui/sonner"
 const Home = () => {
