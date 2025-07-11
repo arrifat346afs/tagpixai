@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { FileContext } from "../FileContext";
+import { FileContext } from "../context/FileContext";
 import { Button } from "@/components/ui/button";
 import { CgSoftwareUpload } from "react-icons/cg";
 

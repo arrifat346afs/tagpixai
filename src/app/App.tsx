@@ -1,5 +1,5 @@
 import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
-import Home from "./app-components/Home";
+import Home from "./_components/Home";
 
 function App() {
   return (

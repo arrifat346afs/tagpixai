@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { FileContext } from "./FileContext";
+import { FileContext } from "./context/FileContext";
 import "./css/FilePreview.css"; // Import the CSS for animations
 import { IoImageOutline } from "react-icons/io5";
 

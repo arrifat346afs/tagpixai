@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useContext, useEffect, useState, useRef } from "react"
-import { FileContext } from "../FileContext"
+import { FileContext } from "../context/FileContext"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { X, ImageIcon } from "lucide-react"

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { useState, useContext } from "react"
-import { FileContext } from "../FileContext"
+import { FileContext } from "../context/FileContext"
 import { toast } from "sonner"
 
 const Export = () => {

@@ -1,13 +1,13 @@
 import { Routes, Route } from "react-router-dom";
 import { useState } from "react";
-import Category from "./Catagory";
+import Category from "./Catagory/Catagory";
 // import { ToastContainer} from 'react-toastify';
 import NavBar from "./NavBar";
 import ApiSettings from "./settings/Settings";
-import MatadataSettings from "./settings/MatadataSettings";
+import MatadataSettings from "./settings/_components/MatadataSettings";
 import FilePreview from "./FilePreview";
 import MetadataInput from "./MetadataInput";
-import ActionButton from "./ActionButton";
+import ActionButton from "./Buttons/ActionButton";
 import FileDisplay from "./fileupload/FileDisplay";
 import ProgressBar from "./ProgressBar";
 import { Toaster } from "@/components/ui/sonner"

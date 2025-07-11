@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useContext, useState, useEffect } from "react";
-import { FileContext } from "../FileContext";
+import { FileContext } from "../context/FileContext";
 import { toast } from "sonner";
 import { batchProcessor } from "@/services/batch-processing/processor";
 import {

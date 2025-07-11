@@ -7,7 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useContext } from "react";
-import { FileContext } from "./FileContext";
+import { FileContext } from "../context/FileContext";
 
 // Category mapping object
 const KEYWORD_TO_CATEGORY_MAP: Record<string, string[]> = {

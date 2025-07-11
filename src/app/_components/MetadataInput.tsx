@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { AIAnalysisResult } from "@/api/ai";
 import { toast } from "sonner";
 import { batchProcessor } from "@/services/batch-processing/processor";
-import { FileContext } from "./FileContext";
+import { FileContext } from "./context/FileContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TitleField from "./metadata-fields/TitleField";
 import DescriptionField from "./metadata-fields/DescriptionField";
