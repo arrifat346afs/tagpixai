@@ -3,6 +3,7 @@ import { app } from "electron";
 import { existsSync, mkdirSync } from "fs";
 import path from "path";
 import { loadFfmpeg, loadImageScript } from '../main.js';
+import { imageWorkerPool } from '../workers/workerPool.js';
 
 
 
@@ -71,50 +72,73 @@ export async function generateThumbnail(
     try {
       if (!existsSync(thumbnailPath)) {
         try {
-          // Try to use ImageScript first
-          const ImageScript = await loadImageScript();
+          // Use worker pool for ImageScript operations to prevent main thread blocking
+          console.log("Using worker pool for thumbnail generation:", path.basename(filePath));
 
-          // Read the image file
-          const imageBuffer = await fs.readFile(filePath);
+          const workerResult = await imageWorkerPool.executeTask({
+            operation: 'generateThumbnail',
+            filePath: filePath,
+            options: { maxHeight: 256 }
+          });
 
-          // Decode the image
-          const image = await ImageScript.decode(imageBuffer);
-
-          // Calculate dimensions to maintain aspect ratio within 256px height
-          const maxHeight = 256;
-          let newWidth = image.width;
-          let newHeight = image.height;
-
-          if (newHeight > maxHeight) {
-            const aspectRatio = newWidth / newHeight;
-            newHeight = maxHeight;
-            newWidth = Math.round(maxHeight * aspectRatio);
+          if (workerResult.success && workerResult.buffer) {
+            // Convert array back to buffer and write to thumbnail path
+            const pngBuffer = Buffer.from(workerResult.buffer);
+            await fs.writeFile(thumbnailPath, pngBuffer);
+            console.log("Successfully generated thumbnail with ImageScript worker");
+          } else {
+            throw new Error(workerResult.error || 'Worker failed to process image');
           }
-
-          // Resize the image
-          const resizedImage = image.resize(newWidth, newHeight);
-
-          // Encode as PNG to preserve transparency
-          const pngBuffer = await resizedImage.encode();
-
-          // Write to thumbnail path
-          await fs.writeFile(thumbnailPath, pngBuffer);
-
-          console.log("Successfully generated thumbnail with ImageScript");
-        } catch (imageScriptError) {
-          // Fallback to a simple file copy if ImageScript fails
-          console.error("ImageScript thumbnail generation failed, using fallback:", imageScriptError);
+        } catch (workerError) {
+          // Fallback to main thread ImageScript if worker fails
+          console.error("Worker thumbnail generation failed, trying main thread:", workerError);
 
           try {
-            // Read the original file
-            const originalBuffer = await fs.readFile(filePath);
+            // Try to use ImageScript on main thread as fallback
+            const ImageScript = await loadImageScript();
 
-            // Write it to the thumbnail location
-            await fs.writeFile(thumbnailPath, originalBuffer);
-            console.log("Used file copy as thumbnail fallback");
-          } catch (fallbackError) {
-            console.error("Fallback thumbnail generation also failed:", fallbackError);
-            throw fallbackError;
+            // Read the image file
+            const imageBuffer = await fs.readFile(filePath);
+
+            // Decode the image
+            const image = await ImageScript.decode(imageBuffer);
+
+            // Calculate dimensions to maintain aspect ratio within 256px height
+            const maxHeight = 256;
+            let newWidth = image.width;
+            let newHeight = image.height;
+
+            if (newHeight > maxHeight) {
+              const aspectRatio = newWidth / newHeight;
+              newHeight = maxHeight;
+              newWidth = Math.round(maxHeight * aspectRatio);
+            }
+
+            // Resize the image
+            const resizedImage = image.resize(newWidth, newHeight);
+
+            // Encode as PNG to preserve transparency
+            const pngBuffer = await resizedImage.encode();
+
+            // Write to thumbnail path
+            await fs.writeFile(thumbnailPath, pngBuffer);
+
+            console.log("Successfully generated thumbnail with ImageScript main thread fallback");
+          } catch (imageScriptError) {
+            // Final fallback to a simple file copy if ImageScript fails
+            console.error("ImageScript thumbnail generation failed, using file copy fallback:", imageScriptError);
+
+            try {
+              // Read the original file
+              const originalBuffer = await fs.readFile(filePath);
+
+              // Write it to the thumbnail location
+              await fs.writeFile(thumbnailPath, originalBuffer);
+              console.log("Used file copy as thumbnail fallback");
+            } catch (fallbackError) {
+              console.error("All thumbnail generation methods failed:", fallbackError);
+              throw fallbackError;
+            }
           }
         }
       }

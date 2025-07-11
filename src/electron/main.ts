@@ -9,6 +9,7 @@ import { getPreloadPath } from "./pathResolver.js";
 import Store from "electron-store";
 import { Image } from "imagescript";
 import { cleanupExifTool } from "./metadata/embedMetadata.js";
+import { imageWorkerPool } from "./workers/workerPool.js";
 
 let imageScriptModule: typeof Image | null = null;
 let ffmpegModule: typeof import("fluent-ffmpeg") | null = null;
@@ -187,6 +188,9 @@ app.on("will-quit", () => {
     // Clean up ExifTool processes
     cleanupExifTool();
 
+    // Clean up worker pool
+    imageWorkerPool.terminate();
+
     // Clean up temp metadata directory
     if (existsSync(tempMetadataDir)) {
       rmSync(tempMetadataDir, { recursive: true, force: true });
@@ -217,6 +221,7 @@ app.on("will-quit", () => {
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     cleanupExifTool();
+    imageWorkerPool.terminate();
     app.quit();
   }
 });

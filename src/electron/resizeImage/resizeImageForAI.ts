@@ -3,6 +3,7 @@ import fs from "fs/promises";
 import { generateThumbnail } from "../Thumbnail/generateThumbnail.js";
 import { loadImageScript } from "../main.js";
 import { existsSync } from "fs";
+import { imageWorkerPool } from '../workers/workerPool.js';
 
 // Fallback image processing using Node.js built-in modules
 async function fallbackImageProcessing(filePath: string): Promise<string> {
@@ -54,48 +55,68 @@ export async function resizeImageForAI(filePath: string): Promise<string> {
 
   // Handle images
   try {
-    // Try to use ImageScript first
+    // Try to use worker pool first for ImageScript operations
     try {
-      // Dynamically load ImageScript
-      const ImageScript = await loadImageScript();
+      console.log(`Processing image with ImageScript worker: ${path.basename(filePath)}`);
 
-      // Read the image file
-      const imageBuffer = await fs.readFile(filePath);
+      const workerResult = await imageWorkerPool.executeTask({
+        operation: 'resizeForAI',
+        filePath: filePath,
+        options: { maxSize: 256, quality: 50 }
+      });
 
-      // Decode the image
-      const image = await ImageScript.decode(imageBuffer);
-
-      console.log(
-        `Processing image with ImageScript: ${path.basename(filePath)} (${image.width}x${image.height})`
-      );
-
-      // Calculate dimensions to maintain aspect ratio within 256x256
-      const maxSize = 256;
-      let newWidth = image.width;
-      let newHeight = image.height;
-
-      if (newWidth > maxSize || newHeight > maxSize) {
-        const aspectRatio = newWidth / newHeight;
-        if (newWidth > newHeight) {
-          newWidth = maxSize;
-          newHeight = Math.round(maxSize / aspectRatio);
-        } else {
-          newHeight = maxSize;
-          newWidth = Math.round(maxSize * aspectRatio);
-        }
+      if (workerResult.success && workerResult.base64) {
+        console.log(`Successfully processed image with worker: ${path.basename(filePath)}`);
+        return workerResult.base64;
+      } else {
+        throw new Error(workerResult.error || 'Worker failed to process image');
       }
+    } catch (workerError) {
+      // Fallback to main thread ImageScript if worker fails
+      console.error("Worker image processing failed, trying main thread:", workerError);
 
-      // Resize the image
-      const resizedImage = image.resize(newWidth, newHeight);
+      try {
+        // Dynamically load ImageScript
+        const ImageScript = await loadImageScript();
 
-      // Encode as JPEG with quality 50
-      const jpegBuffer = await resizedImage.encodeJPEG(50);
+        // Read the image file
+        const imageBuffer = await fs.readFile(filePath);
 
-      return Buffer.from(jpegBuffer).toString("base64");
-    } catch (imageScriptError) {
-      // If ImageScript fails, log the error and use fallback
-      console.error("ImageScript processing failed, using fallback:", imageScriptError);
-      return await fallbackImageProcessing(filePath);
+        // Decode the image
+        const image = await ImageScript.decode(imageBuffer);
+
+        console.log(
+          `Processing image with ImageScript main thread: ${path.basename(filePath)} (${image.width}x${image.height})`
+        );
+
+        // Calculate dimensions to maintain aspect ratio within 256x256
+        const maxSize = 256;
+        let newWidth = image.width;
+        let newHeight = image.height;
+
+        if (newWidth > maxSize || newHeight > maxSize) {
+          const aspectRatio = newWidth / newHeight;
+          if (newWidth > newHeight) {
+            newWidth = maxSize;
+            newHeight = Math.round(maxSize / aspectRatio);
+          } else {
+            newHeight = maxSize;
+            newWidth = Math.round(maxSize * aspectRatio);
+          }
+        }
+
+        // Resize the image
+        const resizedImage = image.resize(newWidth, newHeight);
+
+        // Encode as JPEG with quality 50
+        const jpegBuffer = await resizedImage.encodeJPEG(50);
+
+        return Buffer.from(jpegBuffer).toString("base64");
+      } catch (imageScriptError) {
+        // If ImageScript fails, log the error and use fallback
+        console.error("ImageScript processing failed, using fallback:", imageScriptError);
+        return await fallbackImageProcessing(filePath);
+      }
     }
   } catch (error) {
     console.error("All image processing methods failed:", error);

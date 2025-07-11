@@ -32,13 +32,22 @@ function FileDisplay() {
   const [thumbnails, setThumbnails] = useState<ThumbnailData[]>([])
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [isHovering, setIsHovering] = useState(false)
+  const [activeThumbnailRequests, setActiveThumbnailRequests] = useState(0)
 
   const MAX_RETRIES = 3
   const RETRY_DELAY = 2000 // 2 seconds
-  const TIMEOUT_DURATION = 10000 // 10 seconds
+  const TIMEOUT_DURATION = 15000 // 15 seconds (increased for worker processing)
+  const MAX_CONCURRENT_THUMBNAILS = 3 // Limit concurrent thumbnail generation
 
   const loadSingleThumbnail = async (file: string, retryCount = 0): Promise<string | null> => {
     try {
+      // Wait if too many concurrent requests
+      while (activeThumbnailRequests >= MAX_CONCURRENT_THUMBNAILS) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      setActiveThumbnailRequests(prev => prev + 1);
+
       const thumbnailPromise = async () => {
         try {
           const thumbnailPath = await window.electron.generateThumbnail(file)
@@ -56,11 +65,16 @@ function FileDisplay() {
         } catch (error) {
           console.error("Thumbnail generation/reading error:", error)
           throw error
+        } finally {
+          setActiveThumbnailRequests(prev => prev - 1);
         }
       }
 
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("Thumbnail generation timed out")), TIMEOUT_DURATION)
+        setTimeout(() => {
+          setActiveThumbnailRequests(prev => prev - 1);
+          reject(new Error("Thumbnail generation timed out"));
+        }, TIMEOUT_DURATION)
       })
 
       return (await Promise.race([thumbnailPromise(), timeoutPromise])) as string
@@ -215,10 +229,16 @@ function FileDisplay() {
 
       setThumbnails(newThumbnails)
 
-      // Process thumbnails and metadata in smaller batches
+      // Process thumbnails and metadata in smaller batches with delays
       const BATCH_SIZE = 2
       for (let i = 0; i < selectedFiles.length; i += BATCH_SIZE) {
         const batch = selectedFiles.slice(i, i + BATCH_SIZE)
+
+        // Add a small delay between batches to allow UI updates
+        if (i > 0) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
         await Promise.all(
           batch.map(async (file, batchIndex) => {
             const index = i + batchIndex
