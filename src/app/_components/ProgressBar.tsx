@@ -17,7 +17,7 @@ const ProgressBar = ({ visible = false }: ProgressBarProps) => {
     failed: number;
     total: number;
   } | null>(null);
-  
+
   const hasStartedProcessing = useRef(false);
 
   useEffect(() => {
@@ -29,11 +29,11 @@ const ProgressBar = ({ visible = false }: ProgressBarProps) => {
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+
       // Only reset on component unmount if process is still in progress
       const currentStatus = batchProcessor.getStatus();
       if (currentStatus.inProgress) {
@@ -45,31 +45,40 @@ const ProgressBar = ({ visible = false }: ProgressBarProps) => {
   useEffect(() => {
     const updateProgress = (newStatus: BatchProcessingStatus) => {
       // Detect if processing has started
-      if (newStatus.inProgress || (newStatus.total > 0 && (newStatus.completed > 0 || newStatus.failed > 0))) {
+      if (
+        newStatus.inProgress ||
+        (newStatus.total > 0 &&
+          (newStatus.completed > 0 || newStatus.failed > 0))
+      ) {
         hasStartedProcessing.current = true;
       }
 
       // If we're processing or have active status, update normally
-      if (newStatus.inProgress || (newStatus.total > 0 && (newStatus.completed + newStatus.failed < newStatus.total))) {
+      if (
+        newStatus.inProgress ||
+        (newStatus.total > 0 &&
+          newStatus.completed + newStatus.failed < newStatus.total)
+      ) {
         setStatus(newStatus);
         setIsCompleted(false);
-        
+
         if (newStatus.total > 0) {
-          const progressValue = ((newStatus.completed + newStatus.failed) / newStatus.total) * 100;
+          const progressValue =
+            ((newStatus.completed + newStatus.failed) / newStatus.total) * 100;
           setProgress(progressValue);
         }
       }
       // Detect completion: we were processing, now all files are done
       else if (
-        hasStartedProcessing.current && 
-        newStatus.total > 0 && 
-        (newStatus.completed + newStatus.failed === newStatus.total)
+        hasStartedProcessing.current &&
+        newStatus.total > 0 &&
+        newStatus.completed + newStatus.failed === newStatus.total
       ) {
         // Process just completed
         setCompletedData({
           completed: newStatus.completed,
           failed: newStatus.failed,
-          total: newStatus.total
+          total: newStatus.total,
         });
         setIsCompleted(true);
         setProgress(100);
@@ -77,23 +86,28 @@ const ProgressBar = ({ visible = false }: ProgressBarProps) => {
       }
       // If status gets reset (0 files) but we had completed a process, maintain completion state
       else if (
-        hasStartedProcessing.current && 
-        isCompleted && 
+        hasStartedProcessing.current &&
+        isCompleted &&
         completedData &&
-        (newStatus.total === 0 || (newStatus.completed === 0 && newStatus.failed === 0))
+        (newStatus.total === 0 ||
+          (newStatus.completed === 0 && newStatus.failed === 0))
       ) {
         // Keep showing completed state, ignore the reset
         return;
       }
       // New process starting - clear completion state
-      else if (newStatus.inProgress && (newStatus.total > 0 || newStatus.completed > 0 || newStatus.failed > 0)) {
+      else if (
+        newStatus.inProgress &&
+        (newStatus.total > 0 || newStatus.completed > 0 || newStatus.failed > 0)
+      ) {
         setIsCompleted(false);
         setCompletedData(null);
         hasStartedProcessing.current = true;
         setStatus(newStatus);
-        
-       if (newStatus.total > 0) {
-          const progressValue = ((newStatus.completed + newStatus.failed) / newStatus.total) * 100;
+
+        if (newStatus.total > 0) {
+          const progressValue =
+            ((newStatus.completed + newStatus.failed) / newStatus.total) * 100;
           setProgress(progressValue);
         } else {
           setProgress(0);
@@ -103,7 +117,7 @@ const ProgressBar = ({ visible = false }: ProgressBarProps) => {
 
     const unsubscribe = batchProcessor.subscribe(updateProgress);
     const currentStatus = batchProcessor.getStatus();
-    
+
     // Initialize with current status
     updateProgress(currentStatus);
 
@@ -117,29 +131,36 @@ const ProgressBar = ({ visible = false }: ProgressBarProps) => {
   if (!visible) return null;
 
   // Use completed data if available, otherwise use current status
-  const displayData = isCompleted && completedData ? completedData : {
-    completed: status?.completed ?? 0,
-    failed: status?.failed ?? 0,
-    total: status?.total ?? 0
-  };
+  const displayData =
+    isCompleted && completedData
+      ? completedData
+      : {
+          completed: status?.completed ?? 0,
+          failed: status?.failed ?? 0,
+          total: status?.total ?? 0,
+        };
 
   return (
     <div className="col-span-3 row-start-4 pt-1 select-none">
       {/* Status text above progress bar */}
-      <span className="text-xs flex justify-between items-center pb-4">
-        <span className="text-zinc-600">
-          {isCompleted ? "Completed" : "Processing"}: {displayData.completed + displayData.failed}/{displayData.total} files
-          {displayData.failed > 0 && ` (${displayData.failed} failed)`}
-          {isCompleted && displayData.failed === 0 && " ✓"}
+      <div className="flex justify-center items-center">
+        {" "}
+        <span className="text-xs flex pb-2">
+          <span className="text-zinc-600 pl-2">
+            {isCompleted ? "Completed" : "Processing"}:{" "}
+            {displayData.completed + displayData.failed}/{displayData.total}{" "}
+            files
+            {displayData.failed > 0 && ` (${displayData.failed} failed)`}
+            {isCompleted && displayData.failed === 0 && " ✓"}
+          </span>
+          <span className="text-zinc-600 pl-2">{Math.round(progress)}%</span>
         </span>
-        <span className="text-zinc-600 pr-2">
-          {Math.round(progress)}%
-        </span>
-      </span>
+      </div>
+
       {/* Progress bar container */}
       <div className="w-full h-3 rounded-md overflow-hidden">
         {/* Progress bar fill */}
-         <Progress value={progress}/>
+        <Progress value={progress} />
       </div>
     </div>
   );
