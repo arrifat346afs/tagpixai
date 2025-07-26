@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs/promises";
 import { generateThumbnail } from "../Thumbnail/generateThumbnail.js";
-import { loadImageScript } from "../main.js";
+import { loadSharp } from "../main.js";
 import { existsSync } from "fs";
 import { imageWorkerPool } from '../workers/workerPool.js';
 
@@ -72,27 +72,26 @@ export async function resizeImageForAI(filePath: string): Promise<string> {
         throw new Error(workerResult.error || 'Worker failed to process image');
       }
     } catch (workerError) {
-      // Fallback to main thread ImageScript if worker fails
+      // Fallback to main thread Sharp if worker fails
       console.error("Worker image processing failed, trying main thread:", workerError);
 
       try {
-        // Dynamically load ImageScript
-        const ImageScript = await loadImageScript();
+        // Dynamically load Sharp
+        const sharp = await loadSharp();
 
-        // Read the image file
-        const imageBuffer = await fs.readFile(filePath);
-
-        // Decode the image
-        const image = await ImageScript.decode(imageBuffer);
+        // Get image metadata first
+        const metadata = await sharp(filePath).metadata();
+        const originalWidth = metadata.width || 0;
+        const originalHeight = metadata.height || 0;
 
         console.log(
-          `Processing image with ImageScript main thread: ${path.basename(filePath)} (${image.width}x${image.height})`
+          `Processing image with Sharp main thread: ${path.basename(filePath)} (${originalWidth}x${originalHeight})`
         );
 
         // Calculate dimensions to maintain aspect ratio within 256x256
         const maxSize = 256;
-        let newWidth = image.width;
-        let newHeight = image.height;
+        let newWidth = originalWidth;
+        let newHeight = originalHeight;
 
         if (newWidth > maxSize || newHeight > maxSize) {
           const aspectRatio = newWidth / newHeight;
@@ -105,16 +104,19 @@ export async function resizeImageForAI(filePath: string): Promise<string> {
           }
         }
 
-        // Resize the image
-        const resizedImage = image.resize(newWidth, newHeight);
-
-        // Encode as JPEG with quality 50
-        const jpegBuffer = await resizedImage.encodeJPEG(50);
+        // Resize and convert to JPEG with quality 50
+        const jpegBuffer = await sharp(filePath)
+          .resize(newWidth, newHeight, {
+            fit: 'inside',
+            withoutEnlargement: true
+          })
+          .jpeg({ quality: 50 })
+          .toBuffer();
 
         return Buffer.from(jpegBuffer).toString("base64");
-      } catch (imageScriptError) {
-        // If ImageScript fails, log the error and use fallback
-        console.error("ImageScript processing failed, using fallback:", imageScriptError);
+      } catch (sharpError) {
+        // If Sharp fails, log the error and use fallback
+        console.error("Sharp processing failed, using fallback:", sharpError);
         return await fallbackImageProcessing(filePath);
       }
     }

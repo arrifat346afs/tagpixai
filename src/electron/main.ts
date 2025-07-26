@@ -7,34 +7,34 @@ import { existsSync, mkdirSync, rmSync } from "fs";
 import { isDev } from "./util.js";
 import { getPreloadPath } from "./pathResolver.js";
 import Store from "electron-store";
-import { Image } from "imagescript";
+import sharp from "sharp";
 import { cleanupExifTool } from "./metadata/embedMetadata.js";
 import { imageWorkerPool } from "./workers/workerPool.js";
 
-let imageScriptModule: typeof Image | null = null;
+let sharpModule: typeof sharp | null = null;
 let ffmpegModule: typeof import("fluent-ffmpeg") | null = null;
 
-// Function to dynamically load ImageScript module
-export async function loadImageScript(): Promise<typeof Image> {
-  if (!imageScriptModule) {
-    console.log("Dynamically loading ImageScript module");
+// Function to dynamically load Sharp module
+export async function loadSharp(): Promise<typeof sharp> {
+  if (!sharpModule) {
+    console.log("Dynamically loading Sharp module");
     try {
-      const module = await import("imagescript");
-      imageScriptModule = module.Image;
-      console.log("Successfully loaded ImageScript module");
+      const module = await import("sharp");
+      sharpModule = module.default;
+      console.log("Successfully loaded Sharp module");
     } catch (error: any) {
-      console.error("Error loading ImageScript module:", error);
+      console.error("Error loading Sharp module:", error);
       throw new Error(
-        `Failed to load ImageScript module: ${error.message}. Please ensure ImageScript is correctly installed.`
+        `Failed to load Sharp module: ${error.message}. Please ensure Sharp is correctly installed.`
       );
     }
   }
 
-  if (!imageScriptModule) {
-    throw new Error("ImageScript module failed to initialize");
+  if (!sharpModule) {
+    throw new Error("Sharp module failed to initialize");
   }
 
-  return imageScriptModule;
+  return sharpModule;
 }
 
 // Function to dynamically load ffmpeg module

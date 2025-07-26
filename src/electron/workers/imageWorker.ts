@@ -1,5 +1,18 @@
 import { parentPort } from 'worker_threads';
-import fs from 'fs/promises';
+
+// Cache Sharp instance to avoid repeated imports
+let sharpInstance: any = null;
+
+async function getSharp() {
+  if (!sharpInstance) {
+    sharpInstance = (await import('sharp')).default;
+    // Configure Sharp for maximum performance globally
+    sharpInstance.cache(false); // Disable cache to save memory
+    sharpInstance.simd(true);   // Enable SIMD for faster processing
+    sharpInstance.concurrency(1); // Use single thread per worker to avoid conflicts
+  }
+  return sharpInstance;
+}
 
 interface WorkerTask {
   operation: string;
@@ -40,37 +53,36 @@ async function processImage(data: WorkerTask): Promise<WorkerResult> {
 
 async function generateImageThumbnail(filePath: string, options: WorkerTask['options'] = {}): Promise<WorkerResult> {
   try {
-    // Dynamically import ImageScript in worker
-    const { Image } = await import('imagescript');
-    
-    // Read the image file
-    const imageBuffer = await fs.readFile(filePath);
-    
-    // Decode the image
-    const image = await Image.decode(imageBuffer);
-    
+    // Use cached Sharp instance
+    const sharp = await getSharp();
+
     // Calculate dimensions to maintain aspect ratio within specified height
     const maxHeight = options?.maxHeight || 256;
-    let newWidth = image.width;
-    let newHeight = image.height;
-    
-    if (newHeight > maxHeight) {
-      const aspectRatio = newWidth / newHeight;
-      newHeight = maxHeight;
-      newWidth = Math.round(maxHeight * aspectRatio);
-    }
-    
-    // Resize the image
-    const resizedImage = image.resize(newWidth, newHeight);
-    
-    // Encode as PNG to preserve transparency
-    const pngBuffer = await resizedImage.encode();
-    
+
+    // Use JPEG for thumbnails - much faster than PNG and smaller file size
+    const jpegBuffer = await sharp(filePath)
+      .resize(maxHeight, maxHeight, {
+        fit: 'inside',
+        withoutEnlargement: true,
+        kernel: 'nearest' // Fastest resize algorithm
+      })
+      .jpeg({
+        quality: 80,
+        progressive: false,
+        mozjpeg: false // Disable mozjpeg for speed
+      })
+      .toBuffer();
+
+    // Get final dimensions from the buffer
+    const metadata = await sharp(jpegBuffer).metadata();
+    const finalWidth = metadata.width || maxHeight;
+    const finalHeight = metadata.height || maxHeight;
+
     return {
       success: true,
-      buffer: Array.from(pngBuffer), // Convert to array for transfer
-      width: newWidth,
-      height: newHeight
+      buffer: Array.from(jpegBuffer), // Convert to array for transfer
+      width: finalWidth,
+      height: finalHeight
     };
   } catch (error: any) {
     return {
@@ -82,38 +94,27 @@ async function generateImageThumbnail(filePath: string, options: WorkerTask['opt
 
 async function resizeImageForAI(filePath: string, options: WorkerTask['options'] = {}): Promise<WorkerResult> {
   try {
-    // Dynamically import ImageScript in worker
-    const { Image } = await import('imagescript');
-    
-    // Read the image file
-    const imageBuffer = await fs.readFile(filePath);
-    
-    // Decode the image
-    const image = await Image.decode(imageBuffer);
-    
+    // Use cached Sharp instance
+    const sharp = await getSharp();
+
     // Calculate dimensions to maintain aspect ratio within 256x256
     const maxSize = options?.maxSize || 256;
-    let newWidth = image.width;
-    let newHeight = image.height;
-    
-    if (newWidth > maxSize || newHeight > maxSize) {
-      const aspectRatio = newWidth / newHeight;
-      if (newWidth > newHeight) {
-        newWidth = maxSize;
-        newHeight = Math.round(maxSize / aspectRatio);
-      } else {
-        newHeight = maxSize;
-        newWidth = Math.round(maxSize * aspectRatio);
-      }
-    }
-    
-    // Resize the image
-    const resizedImage = image.resize(newWidth, newHeight);
-    
-    // Encode as JPEG with quality
     const quality = options?.quality || 50;
-    const jpegBuffer = await resizedImage.encodeJPEG(quality as any);
-    
+
+    // Resize and convert to JPEG with optimized settings
+    const jpegBuffer = await sharp(filePath)
+      .resize(maxSize, maxSize, {
+        fit: 'inside',
+        withoutEnlargement: true,
+        kernel: 'nearest' // Fastest resize algorithm
+      })
+      .jpeg({
+        quality,
+        progressive: false,
+        mozjpeg: false // Disable mozjpeg for speed
+      })
+      .toBuffer();
+
     return {
       success: true,
       buffer: Array.from(jpegBuffer), // Convert to array for transfer

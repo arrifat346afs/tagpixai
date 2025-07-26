@@ -2,8 +2,49 @@ import fs from "fs/promises";
 import { app } from "electron";
 import { existsSync, mkdirSync } from "fs";
 import path from "path";
-import { loadFfmpeg, loadImageScript } from '../main.js';
+import { loadFfmpeg, loadSharp } from '../main.js';
 import { imageWorkerPool } from '../workers/workerPool.js';
+
+// Batch thumbnail generation for parallel processing
+export async function generateThumbnailsBatch(
+  filePaths: string[],
+  maxConcurrency: number = 6
+): Promise<Array<{ filePath: string; result?: { path: string; base64?: string }; error?: string }>> {
+  console.log(`Starting batch thumbnail generation for ${filePaths.length} files with concurrency ${maxConcurrency}`);
+
+  const results: Array<{ filePath: string; result?: { path: string; base64?: string }; error?: string }> = [];
+
+  // Process files in batches to avoid overwhelming the system
+  for (let i = 0; i < filePaths.length; i += maxConcurrency) {
+    const batch = filePaths.slice(i, i + maxConcurrency);
+
+    const batchPromises = batch.map(async (filePath) => {
+      try {
+        const result = await generateThumbnail(filePath);
+        return { filePath, result };
+      } catch (error: any) {
+        return { filePath, error: error.message };
+      }
+    });
+
+    const batchResults = await Promise.allSettled(batchPromises);
+
+    batchResults.forEach((promiseResult, index) => {
+      if (promiseResult.status === 'fulfilled') {
+        results.push(promiseResult.value);
+      } else {
+        results.push({
+          filePath: batch[index],
+          error: promiseResult.reason?.message || 'Unknown error'
+        });
+      }
+    });
+
+    console.log(`Completed batch ${Math.floor(i / maxConcurrency) + 1}/${Math.ceil(filePaths.length / maxConcurrency)}`);
+  }
+
+  return results;
+}
 
 
 
@@ -70,92 +111,98 @@ export async function generateThumbnail(
 
     // Handle images
     try {
-      if (!existsSync(thumbnailPath)) {
+      // Check if thumbnail already exists and return it immediately
+      if (existsSync(thumbnailPath)) {
+        const thumbnailBuffer = await fs.readFile(thumbnailPath);
+        const base64Data = thumbnailBuffer.toString("base64");
+        return {
+          path: thumbnailPath,
+          base64: base64Data
+        };
+      }
+
+      // Generate new thumbnail using worker pool
+      try {
+        console.log("Using worker pool for thumbnail generation:", path.basename(filePath));
+
+        const workerResult = await imageWorkerPool.executeTask({
+          operation: 'generateThumbnail',
+          filePath: filePath,
+          options: { maxHeight: 256 }
+        });
+
+        if (workerResult.success && workerResult.buffer) {
+          // Convert array back to buffer and write to thumbnail path
+          const jpegBuffer = Buffer.from(workerResult.buffer);
+
+          // Write file and return base64 in one operation
+          await fs.writeFile(thumbnailPath, jpegBuffer);
+          const base64Data = jpegBuffer.toString("base64");
+
+          console.log("Successfully generated thumbnail with Sharp worker");
+          return {
+            path: thumbnailPath,
+            base64: base64Data
+          };
+        } else {
+          throw new Error(workerResult.error || 'Worker failed to process image');
+        }
+      } catch (workerError) {
+        // Fallback to main thread Sharp if worker fails
+        console.error("Worker thumbnail generation failed, trying main thread:", workerError);
+
         try {
-          // Use worker pool for ImageScript operations to prevent main thread blocking
-          console.log("Using worker pool for thumbnail generation:", path.basename(filePath));
+          // Try to use Sharp on main thread as fallback
+          const sharp = await loadSharp();
 
-          const workerResult = await imageWorkerPool.executeTask({
-            operation: 'generateThumbnail',
-            filePath: filePath,
-            options: { maxHeight: 256 }
-          });
+          // Configure Sharp for maximum performance
+          sharp.cache(false);
+          sharp.simd(true);
 
-          if (workerResult.success && workerResult.buffer) {
-            // Convert array back to buffer and write to thumbnail path
-            const pngBuffer = Buffer.from(workerResult.buffer);
-            await fs.writeFile(thumbnailPath, pngBuffer);
-            console.log("Successfully generated thumbnail with ImageScript worker");
-          } else {
-            throw new Error(workerResult.error || 'Worker failed to process image');
-          }
-        } catch (workerError) {
-          // Fallback to main thread ImageScript if worker fails
-          console.error("Worker thumbnail generation failed, trying main thread:", workerError);
+          // Use optimized JPEG processing for speed
+          const jpegBuffer = await sharp(filePath)
+            .resize(256, 256, {
+              fit: 'inside',
+              withoutEnlargement: true,
+              kernel: 'nearest' // Fastest resize algorithm
+            })
+            .jpeg({
+              quality: 80,
+              progressive: false,
+              mozjpeg: false // Disable mozjpeg for speed
+            })
+            .toBuffer();
+
+          // Write file and return base64 in one operation
+          await fs.writeFile(thumbnailPath, jpegBuffer);
+          const base64Data = jpegBuffer.toString("base64");
+
+          console.log("Successfully generated thumbnail with Sharp main thread fallback");
+          return {
+            path: thumbnailPath,
+            base64: base64Data
+          };
+        } catch (sharpError) {
+          // Final fallback to a simple file copy if Sharp fails
+          console.error("Sharp thumbnail generation failed, using file copy fallback:", sharpError);
 
           try {
-            // Try to use ImageScript on main thread as fallback
-            const ImageScript = await loadImageScript();
+            // Read the original file and use it as thumbnail
+            const originalBuffer = await fs.readFile(filePath);
+            await fs.writeFile(thumbnailPath, originalBuffer);
+            const base64Data = originalBuffer.toString("base64");
 
-            // Read the image file
-            const imageBuffer = await fs.readFile(filePath);
-
-            // Decode the image
-            const image = await ImageScript.decode(imageBuffer);
-
-            // Calculate dimensions to maintain aspect ratio within 256px height
-            const maxHeight = 256;
-            let newWidth = image.width;
-            let newHeight = image.height;
-
-            if (newHeight > maxHeight) {
-              const aspectRatio = newWidth / newHeight;
-              newHeight = maxHeight;
-              newWidth = Math.round(maxHeight * aspectRatio);
-            }
-
-            // Resize the image
-            const resizedImage = image.resize(newWidth, newHeight);
-
-            // Encode as PNG to preserve transparency
-            const pngBuffer = await resizedImage.encode();
-
-            // Write to thumbnail path
-            await fs.writeFile(thumbnailPath, pngBuffer);
-
-            console.log("Successfully generated thumbnail with ImageScript main thread fallback");
-          } catch (imageScriptError) {
-            // Final fallback to a simple file copy if ImageScript fails
-            console.error("ImageScript thumbnail generation failed, using file copy fallback:", imageScriptError);
-
-            try {
-              // Read the original file
-              const originalBuffer = await fs.readFile(filePath);
-
-              // Write it to the thumbnail location
-              await fs.writeFile(thumbnailPath, originalBuffer);
-              console.log("Used file copy as thumbnail fallback");
-            } catch (fallbackError) {
-              console.error("All thumbnail generation methods failed:", fallbackError);
-              throw fallbackError;
-            }
+            console.log("Used file copy as thumbnail fallback");
+            return {
+              path: thumbnailPath,
+              base64: base64Data
+            };
+          } catch (fallbackError) {
+            console.error("All thumbnail generation methods failed:", fallbackError);
+            throw fallbackError;
           }
         }
       }
-
-      // Verify thumbnail was created
-      if (!existsSync(thumbnailPath)) {
-        throw new Error("Thumbnail generation failed");
-      }
-
-      // Read the thumbnail for base64 encoding
-      const thumbnailBuffer = await fs.readFile(thumbnailPath);
-      const base64Data = thumbnailBuffer.toString("base64");
-
-      return {
-        path: thumbnailPath,
-        base64: base64Data
-      };
     } catch (error) {
       console.error("Image thumbnail generation error:", error);
       throw error;

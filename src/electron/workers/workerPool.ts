@@ -1,6 +1,7 @@
 import { Worker } from "worker_threads";
 import path from "path";
 import { fileURLToPath } from "url";
+import os from "os";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,8 +28,10 @@ class WorkerPool {
   }> = [];
   private maxWorkers: number;
 
-  constructor(maxWorkers: number = 2) {
-    this.maxWorkers = Math.min(maxWorkers, 4); // Limit to 4 workers max
+  constructor(maxWorkers: number = 4) {
+    // Use more workers for better parallelism, up to CPU cores
+    const cpuCores = os.cpus().length;
+    this.maxWorkers = Math.min(maxWorkers, Math.max(cpuCores, 8)); // Use CPU cores or 8, whichever is higher
   }
 
   private createWorker(): Worker {
@@ -75,7 +78,7 @@ class WorkerPool {
     
     const timeout = setTimeout(() => {
       reject(new Error('Worker task timeout'));
-    }, 30000); // 30 second timeout
+    }, 10000); // 10 second timeout for faster failure detection
     
     const messageHandler = (result: WorkerResult) => {
       clearTimeout(timeout);
@@ -112,8 +115,8 @@ class WorkerPool {
   }
 }
 
-// Export singleton instance
-export const imageWorkerPool = new WorkerPool(2);
+// Export singleton instance with more workers for better performance
+export const imageWorkerPool = new WorkerPool(6);
 
 // Cleanup on process exit
 process.on('exit', () => {
