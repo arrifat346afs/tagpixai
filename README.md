@@ -14,8 +14,8 @@ TagPix AI is an Electron-based desktop application built with React, TypeScript,
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/arrifat346afs/react-electron-tagpix-ai.git
-cd react-electron-tagpix-ai
+git clone https://github.com/arrifat346afs/tagpixai.git
+cd tagpixai
 ```
 
 2. Install dependencies:
@@ -61,32 +61,30 @@ The built applications will be available in the `dist` directory.
 
 ## Project Structure
 
-The project follows a modern React application structure:
+The project follows a modern Electron and React application structure:
 
 ```
 src/
 ├── app/                    # App-specific components and logic
-│   ├── (routes)/           # Route groups using Next.js-inspired structure
-│   │   ├── api-settings/   # API settings page
-│   │   ├── metadata-settings/ # Metadata settings page
-│   │   └── (home)/         # Home page (default route)
-│   ├── layout.tsx          # Root layout component
-│   └── providers.tsx       # All context providers
+│   ├── _components/        # Shared components like FilePreview,NavBar, etc.
+│   ├── main.tsx            # React entry point
+│   └── App.tsx             # Root React component
 ├── components/             # Reusable components
 │   ├── ui/                 # UI components (buttons, inputs, etc.)
-│   └── settings/           # Settings-related components
-├── context/                # React context providers
+│   └── motion-primitives/  # Animations like text shimmer
 ├── electron/               # Electron main process code
 │   ├── main.ts             # Main process entry
-│   ├── preload.ts          # Preload script
-│   └── util.ts             # Electron utilities
+│   ├── preload.cts         # Preload script
+│   ├── ipc/                # IPC handlers
+│   ├── metadata/           # Metadata-related utilities
+│   ├── resizeImage/        # Image resizing utilities
+│   ├── Thumbnail/          # Thumbnail generation utilities
+│   └── workers/            # Worker threads for heavy tasks
 ├── hooks/                  # Custom React hooks
 ├── lib/                    # Utility functions and libraries
 ├── services/               # Service layer for API calls, etc.
-│   └── api/                # API services
-├── styles/                 # Global styles
 ├── types/                  # TypeScript type definitions
-└── main.tsx                # React entry point
+└── index.html              # HTML entry point
 ```
 
 ### Build Output
@@ -105,21 +103,24 @@ src/
 - Vite 6
 - Tailwind CSS
 - Radix UI Components
-- Mistral AI Integration
+- Multiple AI Integrations (e.g., Mistral AI)
 - Electron Store for persistence
 - ImageScript for image processing
+- Sharp for image manipulation
+- Sonner for notifications
+- Lucide React for icons
 
 ## Features
 
 - AI-powered metadata generation for images
 - Batch processing of multiple images
 - Customizable metadata settings
-- Support for multiple AI providers
-- Export metadata to various formats
+- Support for multiple AI providers (e.g., Mistral AI, others)
+- Export metadata to various formats (JSON, CSV, etc.)
 - User-friendly interface with dark mode
 - Local file system integration
-- Custom thumbnail generation
-- Metadata persistence
+- Custom thumbnail generation with performance optimization
+- Metadata persistence using Electron Store
 - Cross-platform support (Windows, macOS, Linux)
 
 ## Development Notes
