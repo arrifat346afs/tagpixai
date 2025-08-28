@@ -130,10 +130,3 @@ src/
 - The UI is built using React with Tailwind CSS for styling
 - Settings and metadata are persisted using electron-store
 
-## License
-
-[Your License Here]
-
-## Contributing
-TypeScript
-[Your Contributing Guidelines Here]
