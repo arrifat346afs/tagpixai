@@ -1,21 +1,33 @@
 {
   "appId": "com.tagpix.ai",
+  "productName": "Tagpix AI",
   "files": ["dist-electron", "dist-react"],
+  "asar": true,
   "asarUnpack": [
-    "node_modules/exiftool-vendored.pl/bin/**"
+    "node_modules/exiftool-vendored.pl/bin/**",
+    "**/node_modules/sharp/**/*"
   ],
   "extraResources": [
     "dist-electron/preload.cjs",
     "src/assets/**"
   ],
-  "icon": "./TagpixAi3.png",
+  "icon": "build/icons",
   "mac": {
     "target": "dmg"
   },
   "linux": {
-    "target": "AppImage",
-    "category": "Utility"
-  },
+  "target": ["flatpak"],
+  "category": "Utility",
+  "description": "AI-powered tagging and keyword generator for media files",
+  "synopsis": "Smart tagging and metadata assistant",
+  "desktop": {
+    "entry": {
+      "Name": "Tagpix AI",
+      "Comment": "AI-powered tagging and keyword generator for media files",
+      "Keywords": "AI;Tagging;Photos;Metadata;"
+    }
+  }
+},
   "win": {
     "target": ["nsis"]
   }

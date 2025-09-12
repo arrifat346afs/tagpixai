@@ -6,7 +6,6 @@ TagPix AI is an Electron-based desktop application built with React, TypeScript,
 
 - electron (v35.0.0 or higher)
 - Node.js (v14.0.0 or higher)
-- npm (v6.0.0 or higher)
 - Git
 
 ## Installation
@@ -21,7 +20,7 @@ cd tagpixai
 2. Install dependencies:
 
 ```bash
-npm install
+bun install
 ```
 
 ## Development
@@ -29,7 +28,7 @@ npm install
 Run the development server:
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 This will start both:
@@ -42,19 +41,19 @@ This will start both:
 ### For Windows:
 
 ```bash
-npm run dist:win
+bun run dist:win
 ```
 
 ### For macOS:
 
 ```bash
-npm run dist:mac
+bun run dist:mac
 ```
 
 ### For Linux:
 
 ```bash
-npm run dist:linux
+bun run dist:linux
 ```
 
 The built applications will be available in the `dist` directory.
