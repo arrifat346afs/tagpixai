@@ -17,7 +17,6 @@ const prompts = (settings: ProcessingSettings) => {
 
 1. Title :
    - The title must be approximately ${basePrompt.titleLimit} characters
-    - Include the image style in the title
    - Write only the title and don't include any other text
    - Avoid using colons (:) or any special characters in the title
    - ${placeNameInstruction}
@@ -29,6 +28,7 @@ const prompts = (settings: ProcessingSettings) => {
 
 3. Keywords:
    - The keywords must be approximately (Exact ${basePrompt.keywordLimit} keywords)
+   - Don't include any words like "vector", "image", "photo", "picture", "illustration", "art", "drawing", "graphic", or "design" in the keywords
    - ${placeNameInstruction}
 
 Format response exactly as:

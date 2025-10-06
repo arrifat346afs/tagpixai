@@ -1,5 +1,7 @@
+
 // import { ModelUsageData } from '@/api/model-usage';
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { defaultPromptTemplate } from './../api/ai/providers/defaultPrompt.js';
 import { app, protocol, BrowserWindow } from "electron";
 import path from "path";
 import "./ipc/IpcManagement.js";
@@ -54,10 +56,9 @@ export const store = new Store({
     settings: {
       metadata: {},
       api: {},
+       promptTemplate: defaultPromptTemplate,
     },
     generatedMetadata: {},
-    modelUsage: [],
-    userEmail: null, // Store user email for model usage tracking
   },
 });
 
@@ -120,7 +121,7 @@ app.whenReady().then(() => {
     width: 1200,
     height: 800,
     autoHideMenuBar: true,
-    icon: "TagpixAi3.png",
+    icon: "/build/icon.png",
     frame: false,
     webPreferences: {
       preload: getPreloadPath(),
@@ -203,7 +204,7 @@ app.on("will-quit", () => {
 
     // Only clear generated metadata, not settings
     store.set("generatedMetadata", {});
-    store.delete("modelUsage");
+
     const remainingUsage = store.get("modelUsage");
     if (!remainingUsage) {
       console.log("Successfully cleared model usage data");

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ipcMain } from "electron";
 import { BrowserWindow, dialog, app } from "electron";
 import { generateThumbnail } from "../Thumbnail/generateThumbnail.js";

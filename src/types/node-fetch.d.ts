@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 declare module 'node-fetch' {
   export default function fetch(
     url: string | Request,
@@ -14,7 +15,7 @@ declare module 'node-fetch' {
   
   export type RequestInfo = string | Request;
   
-  export interface RequestInit extends globalThis.RequestInit {}
+  export type RequestInit = globalThis.RequestInit
   export interface ResponseInit extends globalThis.ResponseInit {}
   export interface Headers extends globalThis.Headers {}
   export interface Body extends globalThis.Body {}

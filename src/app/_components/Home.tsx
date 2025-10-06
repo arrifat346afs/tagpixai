@@ -1,7 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import Category from "./Catagory/Catagory";
-// import { ToastContainer} from 'react-toastify';
 import NavBar from "./NavBar";
 import ApiSettings from "./settings/Settings";
 import MatadataSettings from "./settings/_components/MatadataSettings";
