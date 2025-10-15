@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Worker } from "worker_threads";
 import path from "path";
 import { fileURLToPath } from "url";

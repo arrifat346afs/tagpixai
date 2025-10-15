@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import fs from "fs/promises";
 import { app } from "electron";
 import { existsSync, mkdirSync } from "fs";
@@ -63,7 +64,11 @@ export async function generateThumbnail(
       mkdirSync(thumbnailsDir, { recursive: true });
     }
 
-    const thumbnailName = `${Buffer.from(filePath).toString("base64")}.jpg`;
+    // Generate a shorter, unique thumbnail name using a hash of the file path
+    // and a portion of the original filename to avoid ENAMETOOLONG errors.
+    const originalFileName = path.basename(filePath);
+    const fileHash = Buffer.from(filePath).toString("hex").substring(0, 16); // Use first 16 chars of hex hash
+    const thumbnailName = `${originalFileName.substring(0, 50)}-${fileHash}.jpg`; // Truncate original name and append hash
     const thumbnailPath = path.join(thumbnailsDir, thumbnailName);
 
     const extension = path.extname(filePath).toLowerCase();

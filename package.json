@@ -4,7 +4,7 @@
   "version": "6.0.1",
   "productName": "tagpixai",
   "type": "module",
-  "main": "dist-electron/main.js",
+  "main": "dist-electron/electron/main.js",
   "description": " AI powered metadata generator",
   "author": "AR Rifat",
   "scripts": {

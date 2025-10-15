@@ -4,10 +4,10 @@ import { isDev } from './util.js';
 
 export function getPreloadPath() {
   if (isDev()) {
-    return path.join(app.getAppPath(), '/dist-electron/preload.cjs');
+    return path.join(app.getAppPath(), '/dist-electron/electron/preload.cjs');
   } else {
     // In production, look for the preload script in the resources directory
-    return path.join(app.getAppPath(), '../dist-electron/preload.cjs');
+    return path.join(app.getAppPath(), '../dist-electron/electron/preload.cjs');
   }
 }
 
