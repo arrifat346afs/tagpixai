@@ -74,13 +74,13 @@ const Home = () => {
               </div>
 
               {/* Bottom sections - maintain fixed heights */}
-              <div className="h-[6vh] flex-shrink-0">
+              <div className="h-[6vh] shrink-0">
                 <ActionButton />
               </div>
               <div className="h-[21vh]">
                 <FileDisplay />
               </div>
-              <div className="h-[4vh] flex-shrink-0">
+              <div className="h-[4vh] shrink-0">
                 {/* Progress bar container */}
                 <ProgressBar visible={true} />
               </div>
